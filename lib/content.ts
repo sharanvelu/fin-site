@@ -266,7 +266,8 @@ export const INSTALL_ONE_LINER =
 export const INSTALLER_ENV: EnvVar[] = [
   {
     name: "FIN_VERSION",
-    meaning: "Release to install — \"latest\" or an explicit version like 0.1.0.",
+    meaning:
+      "Release to install — \"latest\" is the rolling prerelease built from every master merge; a version like 0.1.0 pins the immutable v0.1.0 release.",
     default: "latest",
   },
   {

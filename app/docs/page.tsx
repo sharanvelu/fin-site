@@ -68,10 +68,10 @@ FIN_PLUGS=mysql,redis`}
         database if it&apos;s missing, and prints the URL it&apos;s served at.
       </P>
 
-      <Callout kind="tip" title="No virtualenv">
-        Fin runs against your system Python 3.11+. The installer does a <Code>--user</Code>{" "}
-        pip install and symlinks a <Code>fin</Code> launcher onto your PATH — nothing to
-        activate.
+      <Callout kind="tip" title="No Python required">
+        Fin ships as a prebuilt, standalone binary that embeds its own Python interpreter —
+        no Python, pip, or virtualenv on your machine. You only need Docker running
+        (Python 3.11+ is needed only if you install from source).
       </Callout>
 
       <Pager

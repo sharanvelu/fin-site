@@ -206,7 +206,8 @@ export const SYSTEM_ENV: EnvVar[] = [
   { name: "FIN_PROXY_IMAGE", meaning: "Traefik image for the proxy.", default: "traefik:v3.6" },
   {
     name: "FIN_PYTHON",
-    meaning: "Force a specific Python interpreter for the launcher.",
+    meaning:
+      "Force a specific Python interpreter for the source-path fin launcher. Not used by the prebuilt binary (it embeds its own interpreter).",
     default: "auto-detected",
   },
   {
@@ -252,11 +253,45 @@ export const HIGHLIGHTS = [
     icon: "shield",
   },
   {
-    title: "No virtualenv",
-    body: "Fin runs against your system Python 3.11+; the installer uses a --user pip install and a fin launcher symlinked onto your PATH.",
+    title: "No Python required",
+    body: "Fin ships as a prebuilt, standalone binary per OS/arch that embeds its own Python interpreter — no Python, pip, or virtualenv on your machine. Just Docker.",
     icon: "feather",
   },
 ];
 
 export const INSTALL_ONE_LINER =
-  'bash -c "$(curl -fsSL https://raw.githubusercontent.com/<org>/<repo>/main/install.sh)"';
+  'bash -c "$(curl -fsSL https://raw.githubusercontent.com/sharanvelu/fin/main/install.sh)"';
+
+/** Environment overrides read by install.sh (not by the fin binary itself). */
+export const INSTALLER_ENV: EnvVar[] = [
+  {
+    name: "FIN_VERSION",
+    meaning: "Release to install — \"latest\" or an explicit version like 0.1.0.",
+    default: "latest",
+  },
+  {
+    name: "FIN_HOME_DIR",
+    meaning: "Where the binary is unpacked.",
+    default: "$HOME/.fin-cli",
+  },
+  {
+    name: "FIN_BIN_DIR",
+    meaning: "Where the fin symlink is placed.",
+    default: "auto-detected writable PATH dir",
+  },
+  {
+    name: "FIN_DATA_DIR",
+    meaning: "Per-user data dir — plugs are seeded into <FIN_DATA_DIR>/plugs.",
+    default: "$HOME/.fin",
+  },
+  {
+    name: "FIN_RELEASE_REPO",
+    meaning: "GitHub repo hosting the release tarballs.",
+    default: "sharanvelu/fin",
+  },
+  {
+    name: "FIN_PLUGS_REPO",
+    meaning: "git URL for the plugs repo the installer seeds from.",
+    default: "sharanvelu/fin-plugs",
+  },
+];

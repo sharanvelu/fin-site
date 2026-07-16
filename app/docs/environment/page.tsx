@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { PageHeader, H2, P, Code, Callout, Pager, RefTable } from "@/components/Prose";
 import { PROJECT_ENV, SYSTEM_ENV } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Environment variables",
-  description: "Every FIN_* variable Fin reads — project config and system/installer config.",
+  description: "Every FIN_* variable Fin reads — project config and system config.",
 };
 
 export default function EnvironmentPage() {
@@ -31,8 +32,15 @@ export default function EnvironmentPage() {
         ])}
       />
 
-      <H2 id="system">System &amp; installer variables</H2>
-      <P>Set in the process environment to tune Fin&apos;s own behavior.</P>
+      <H2 id="system">System variables</H2>
+      <P>
+        Set in the process environment to tune Fin&apos;s own behavior. The one-time
+        variables read by <Code>install.sh</Code> (<Code>FIN_VERSION</Code>,{" "}
+        <Code>FIN_HOME_DIR</Code>, <Code>FIN_BIN_DIR</Code>, …) are documented in{" "}
+        <Link href="/docs/installation#installer-overrides" className="text-accent hover:underline">
+          Installation → Installer overrides
+        </Link>.
+      </P>
       <RefTable
         head={["Variable", "Meaning", "Default"]}
         rows={SYSTEM_ENV.map((v) => [

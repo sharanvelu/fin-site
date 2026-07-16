@@ -48,6 +48,11 @@ export default function PlugsPage() {
       </Callout>
 
       <H2 id="bundled">Bundled plugs</H2>
+      <P>
+        Plugs are <strong>not</strong> embedded in the <Code>fin</Code> binary — they stay as
+        plain <Code>.py</Code> files loaded at runtime. The installer seeds these into{" "}
+        <Code>~/.fin/plugs</Code> by cloning the <Code>fin-plugs</Code> repo:
+      </P>
       <RefTable
         head={["Plug", "Type", "Provides"]}
         rows={[

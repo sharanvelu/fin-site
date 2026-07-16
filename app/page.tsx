@@ -57,7 +57,7 @@ export default function Home() {
         {/* Install one-liner */}
         <div className="mx-auto mt-16 max-w-3xl">
           <p className="mb-2 text-center text-sm text-fg-faint">
-            Install in one line — no virtualenv, just system Python 3.11+
+            Install in one line — a prebuilt, standalone binary. No Python required, just Docker.
           </p>
           <CodeBlock code={INSTALL_ONE_LINER} lang="bash" />
         </div>

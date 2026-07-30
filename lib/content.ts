@@ -169,7 +169,7 @@ export const COMMAND_GROUPS: CommandGroup[] = [
   {
     group: "AI agents",
     blurb:
-      "Generate instruction files that teach AI coding agents (Claude Code, Cursor, Codex, Copilot, …) to run project commands through fin — command tables are built from the installed plugs' metadata. Commit the files; re-run after changing FIN_APP/FIN_PLUGS or upgrading plugs.",
+      "Generate instruction files that teach AI coding agents — including Claude Code, Cursor, Codex, Copilot, Gemini, Aider and more — to run project commands through fin. Command tables are built from the installed plugs' metadata. Commit the files; re-run after changing FIN_APP/FIN_PLUGS or upgrading plugs.",
     commands: [
       {
         name: "agents list",
@@ -251,24 +251,9 @@ export const PROJECT_ENV: EnvVar[] = [
       "Override the project name (defaults to the cwd basename, lowercased).",
   },
   {
-    name: "FIN_DOCKER_IMAGE",
-    meaning:
-      "Override the primary container image. (Laravel) defaults to sharanvelu/laravel-php:<FIN_PHP_VERSION>.",
-  },
-  {
     name: "FIN_OVERRIDE_ASSETS",
     meaning:
       "Comma-separated assets to start, overriding the persisted enable flags.",
-  },
-  {
-    name: "FIN_PHP_VERSION",
-    meaning: "(Laravel) PHP/image tag, e.g. 8.3, 8.2, latest.",
-    default: "latest",
-  },
-  {
-    name: "FIN_COMPOSER_VERSION",
-    meaning: "(Laravel) Composer major version, 1 or 2.",
-    default: "2",
   },
   {
     name: "DB_CONNECTION, DB_DATABASE, DB_HOST…",
@@ -278,6 +263,41 @@ export const PROJECT_ENV: EnvVar[] = [
   {
     name: "REDIS_*",
     meaning: "Standard Redis config (parsed alongside DB_*).",
+  },
+];
+
+/**
+ * Variables declared by the Laravel plug's env_spec() — read by the plug, not
+ * by the fin core. Other plugs declare their own (see each plug's page).
+ */
+export const LARAVEL_PLUG_ENV: EnvVar[] = [
+  {
+    name: "FIN_PHP_VERSION",
+    meaning: "PHP/image tag, e.g. 8.3, 8.2, latest.",
+    default: "latest",
+  },
+  {
+    name: "FIN_COMPOSER_VERSION",
+    meaning: "Composer major version, 1 or 2.",
+    default: "2",
+  },
+  {
+    name: "FIN_DOCKER_IMAGE",
+    meaning: "Override the primary container image.",
+    default: "sharanvelu/laravel-php:<FIN_PHP_VERSION>",
+  },
+];
+
+/**
+ * Variables set by a plug inside a ContainerSpec's environment and read back
+ * by Fin's orchestrator — plug-author-facing, not project .env config.
+ */
+export const PLUG_CONTAINER_ENV: EnvVar[] = [
+  {
+    name: "FIN_ASSET_SITE",
+    meaning:
+      "Set inside a ContainerSpec's environment by an asset plug to choose the hostname its web UI is routed at. Read by Fin's orchestrator when the asset is web-exposed — e.g. MinIO's console.",
+    default: "<service>.localhost",
   },
 ];
 

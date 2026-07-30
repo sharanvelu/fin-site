@@ -24,7 +24,7 @@ export function Footer() {
               Write a plug
             </Link>
             <a
-              href="https://github.com/"
+              href="https://github.com/sharanvelu/fin"
               className="hover:text-accent"
               target="_blank"
               rel="noreferrer"

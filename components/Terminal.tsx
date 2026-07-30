@@ -12,7 +12,7 @@ const LINES: Line[] = [
     tone: "ok",
   },
   { text: "✓ Started fin_mysql (mysql:8.0)", tone: "ok" },
-  { text: "✓ Started myapp-web (php:8.3)", tone: "ok" },
+  { text: "✓ Started myapp-web (sharanvelu/laravel-php:8.3)", tone: "ok" },
   { text: "✓ Database myapp is ready (MySQL).", tone: "ok" },
   { text: "✓ myapp is up at http://myapp.localhost", tone: "ok" },
 ];

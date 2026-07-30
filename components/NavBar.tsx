@@ -10,7 +10,7 @@ const LINKS = [
   { title: "Plugs", href: "/docs/plugs" },
 ];
 
-export function NavBar() {
+export function NavBar({ version = "v0.1.6" }: { version?: string }) {
   const pathname = usePathname();
 
   return (
@@ -20,7 +20,7 @@ export function NavBar() {
           <FinLogo className="h-7 w-7 text-accent" />
           <span className="text-lg font-semibold tracking-tight">fin</span>
           <span className="hidden rounded-full border border-border bg-panel px-2 py-0.5 font-mono text-[10px] text-fg-faint sm:inline">
-            v0.1.0
+            {version}
           </span>
         </Link>
 
@@ -53,7 +53,7 @@ export function NavBar() {
             Install
           </Link>
           <a
-            href="https://github.com/"
+            href="https://github.com/sharanvelu/fin"
             target="_blank"
             rel="noreferrer noopener"
             aria-label="GitHub"

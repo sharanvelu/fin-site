@@ -1,6 +1,6 @@
 # Fin docs site
 
-The documentation website for [Fin](../README.md) — a fast, plugin-driven CLI
+The documentation website for [Fin](https://github.com/sharanvelu/fin) — a fast, plugin-driven CLI
 for running local-development Docker containers.
 
 Built with **Next.js 16** (App Router), **React 19**, **Tailwind CSS v4**, and

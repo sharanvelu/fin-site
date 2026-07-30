@@ -3,18 +3,24 @@ import Link from "next/link";
 import {
   PageHeader,
   H2,
+  H3,
   P,
   Code,
   Callout,
   Pager,
   RefTable,
 } from "@/components/Prose";
-import { PROJECT_ENV, SYSTEM_ENV } from "@/lib/content";
+import {
+  PROJECT_ENV,
+  LARAVEL_PLUG_ENV,
+  PLUG_CONTAINER_ENV,
+  SYSTEM_ENV,
+} from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Environment variables",
   description:
-    "Every FIN_* variable Fin reads — project config and system config.",
+    "Every FIN_* variable Fin reads — project, plug-provided, and system config.",
 };
 
 export default function EnvironmentPage() {
@@ -39,6 +45,61 @@ export default function EnvironmentPage() {
       <RefTable
         head={["Variable", "Meaning", "Default"]}
         rows={PROJECT_ENV.map((v) => [
+          <Code key={v.name}>{v.name}</Code>,
+          v.meaning,
+          v.default ? (
+            <Code>{v.default}</Code>
+          ) : (
+            <span className="text-fg-faint">—</span>
+          ),
+        ])}
+      />
+
+      <H2 id="plug-provided">Plug-provided variables</H2>
+      <P>
+        These are declared by a plug&apos;s <Code>env_spec()</Code>, not read by
+        the fin core. Each plug documents its own variables on its page — e.g.
+        the Django plug&apos;s <Code>FIN_PYTHON_VERSION</Code> on{" "}
+        <Link href="/docs/plugs/django" className="text-accent hover:underline">
+          Django
+        </Link>
+        .
+      </P>
+
+      <H3 id="laravel-plug">Laravel plug</H3>
+      <P>
+        Read from the project&apos;s <Code>.env</Code> when{" "}
+        <Code>FIN_APP=laravel</Code> — see{" "}
+        <Link
+          href="/docs/plugs/laravel"
+          className="text-accent hover:underline"
+        >
+          Laravel plug
+        </Link>
+        .
+      </P>
+      <RefTable
+        head={["Variable", "Meaning", "Default"]}
+        rows={LARAVEL_PLUG_ENV.map((v) => [
+          <Code key={v.name}>{v.name}</Code>,
+          v.meaning,
+          v.default ? (
+            <Code>{v.default}</Code>
+          ) : (
+            <span className="text-fg-faint">—</span>
+          ),
+        ])}
+      />
+
+      <H3 id="asset-containers">Asset containers</H3>
+      <P>
+        Set by a plug inside a <Code>ContainerSpec</Code>&apos;s environment
+        (not in your project&apos;s <Code>.env</Code>) and read back by
+        Fin&apos;s orchestrator.
+      </P>
+      <RefTable
+        head={["Variable", "Meaning", "Default"]}
+        rows={PLUG_CONTAINER_ENV.map((v) => [
           <Code key={v.name}>{v.name}</Code>,
           v.meaning,
           v.default ? (

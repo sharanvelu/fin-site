@@ -57,7 +57,7 @@ export const COMMAND_GROUPS: CommandGroup[] = [
     commands: [
       {
         name: "up",
-        desc: "Ensure the proxy, start enabled assets, start the primary app container, and auto-create the DB. Requires FIN_APP.",
+        desc: "Ensure the proxy, start enabled assets, start the primary app container, and auto-create the DB. Requires FIN_APP; offers to install any missing FIN_APP/FIN_PLUGS plugs before starting.",
       },
       {
         name: "down",
@@ -125,12 +125,12 @@ export const COMMAND_GROUPS: CommandGroup[] = [
       {
         name: "plugs search",
         args: "<query>",
-        desc: "Search the remote catalog (not yet wired up — reports a clear message).",
+        desc: "Search the remote plug catalog by name/description.",
       },
       {
         name: "plugs install",
         args: "<name|git-url>",
-        desc: "Install a plug from a git URL (catalog install pending).",
+        desc: "Install a plug by catalog name (e.g. laravel) or from a git URL.",
       },
       { name: "plugs uninstall", args: "<name>", desc: "Remove an installed plug from disk." },
     ],
@@ -234,7 +234,7 @@ export const HIGHLIGHTS = [
   },
   {
     title: "Plugin-driven",
-    body: "Apps and services are plugs: small declarative Python classes that describe containers and contribute commands. Bundled plugs cover Laravel, MySQL, PostgreSQL and Redis.",
+    body: "Apps and services are plugs: small declarative Python classes that describe containers and contribute commands. Official plugs cover Laravel, MySQL, PostgreSQL and Redis.",
     icon: "plug",
   },
   {
@@ -260,20 +260,20 @@ export const HIGHLIGHTS = [
 ];
 
 export const INSTALL_ONE_LINER =
-  'bash -c "$(curl -fsSL https://raw.githubusercontent.com/sharanvelu/fin/main/install.sh)"';
+  'bash -c "$(curl -fsSL https://raw.githubusercontent.com/sharanvelu/fin/master/install.sh)"';
 
 /** Environment overrides read by install.sh (not by the fin binary itself). */
 export const INSTALLER_ENV: EnvVar[] = [
   {
     name: "FIN_VERSION",
     meaning:
-      "Release to install — \"latest\" is the rolling prerelease built from every master merge; a version like 0.1.0 pins the immutable v0.1.0 release.",
+      "Release to install — \"latest\" resolves via GitHub's releases/latest redirect to the newest published release; a version like 0.1.0 pins the immutable v0.1.0 release.",
     default: "latest",
   },
   {
     name: "FIN_HOME_DIR",
-    meaning: "Where the binary is unpacked.",
-    default: "$HOME/.fin-cli",
+    meaning: "Install location — the package root holding the fin executable and its _internal/ runtime.",
+    default: "$HOME/.local/lib/fin-cli",
   },
   {
     name: "FIN_BIN_DIR",
@@ -282,17 +282,12 @@ export const INSTALLER_ENV: EnvVar[] = [
   },
   {
     name: "FIN_DATA_DIR",
-    meaning: "Per-user data dir — plugs are seeded into <FIN_DATA_DIR>/plugs.",
+    meaning: "Per-user data dir — the plugs directory is created at <FIN_DATA_DIR>/plugs.",
     default: "$HOME/.fin",
   },
   {
     name: "FIN_RELEASE_REPO",
     meaning: "GitHub repo hosting the release tarballs.",
     default: "sharanvelu/fin",
-  },
-  {
-    name: "FIN_PLUGS_REPO",
-    meaning: "git URL for the plugs repo the installer seeds from.",
-    default: "sharanvelu/fin-plugs",
   },
 ];

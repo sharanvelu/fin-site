@@ -47,11 +47,12 @@ export default function PlugsPage() {
         Docker itself. Fin&apos;s orchestrator is the sole code path that touches the daemon.
       </Callout>
 
-      <H2 id="bundled">Bundled plugs</H2>
+      <H2 id="bundled">Catalog plugs</H2>
       <P>
         Plugs are <strong>not</strong> embedded in the <Code>fin</Code> binary — they stay as
-        plain <Code>.py</Code> files loaded at runtime. The installer seeds these into{" "}
-        <Code>~/.fin/plugs</Code> by cloning the <Code>fin-plugs</Code> repo:
+        plain <Code>.py</Code> files loaded at runtime, installed into{" "}
+        <Code>~/.fin/plugs</Code> from the official plug catalog (the{" "}
+        <Code>fin-plugs</Code> repo):
       </P>
       <RefTable
         head={["Plug", "Type", "Provides"]}
@@ -69,13 +70,23 @@ export default function PlugsPage() {
         prompt
         code={`fin plugs list                 # installed plugs and their commands
 fin plugs info laravel         # one plug's metadata and path
-fin plugs install <git-url>    # install a plug from a git URL
+fin plugs search <query>       # search the remote plug catalog
+fin plugs install <name>       # install by catalog name (or a git URL)
 fin plugs uninstall <name>     # remove an installed plug`}
       />
       <P>
         A SQLite registry at <Code>~/.fin/registry.db</Code> caches plug metadata for fast
         lookups; it refreshes automatically whenever you list plugs.
       </P>
+
+      <Callout kind="tip" title="fin up installs missing plugs for you">
+        Before starting anything, <Code>fin up</Code> checks that the{" "}
+        <Code>FIN_APP</Code> plug and every plug in <Code>FIN_PLUGS</Code> is
+        installed. If any are missing it offers to install them from the catalog
+        (<Code>[Y/n]</Code>, defaults to Yes) and then continues — decline and it
+        aborts, listing the exact <Code>fin plugs install &lt;name&gt;</Code>{" "}
+        commands to run yourself.
+      </Callout>
 
       <Pager
         prev={{ title: "How it works", href: "/docs/how-it-works" }}

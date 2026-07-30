@@ -30,11 +30,22 @@ export default function TroubleshootingPage() {
         project&apos;s <Code>.env</Code>.
       </P>
 
-      <H2 id="plug-missing">App plug not installed</H2>
+      <H2 id="plug-missing">Plugs not installed</H2>
       <P>
-        <Code>&quot;App plug &apos;&lt;name&gt;&apos; is not installed.&quot;</Code> — check{" "}
-        <Code>fin plugs list</Code>; ensure the plug exists under <Code>App/&lt;name&gt;</Code>{" "}
-        in your plugs dir (<Code>~/.fin/plugs</Code>).
+        <Code>fin up</Code> checks that the <Code>FIN_APP</Code> plug and every plug in{" "}
+        <Code>FIN_PLUGS</Code> is installed before starting anything. If any are missing it
+        warns <Code>&quot;These plugs are not installed: &lt;names&gt;&quot;</Code> and offers
+        to install them from the plug catalog (<Code>[Y/n]</Code>, defaults to Yes) — accept
+        and it installs them into <Code>~/.fin/plugs</Code> and continues. Decline and it
+        aborts (exit code <Code>1</Code>) with a <Code>Plugs Not Installed</Code> panel
+        listing the exact <Code>fin plugs install &lt;name&gt;</Code> commands to run
+        manually.
+      </P>
+      <P>
+        If a plug still fails to load after installing (e.g.{" "}
+        <Code>&quot;App plug &apos;&lt;name&gt;&apos; is not installed.&quot;</Code>), check{" "}
+        <Code>fin plugs list</Code> and confirm the plug file exists in your plugs dir{" "}
+        (<Code>~/.fin/plugs</Code>).
       </P>
 
       <H2 id="port">Port already in use</H2>

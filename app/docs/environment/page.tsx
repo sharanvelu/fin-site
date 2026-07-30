@@ -98,8 +98,8 @@ export default function EnvironmentPage() {
         Optional overrides a plug author <em>may</em> set inside a{" "}
         <Code>ContainerSpec</Code>&apos;s environment (not in your
         project&apos;s <Code>.env</Code>), read back by Fin&apos;s orchestrator.
-        When a plug doesn&apos;t set one, the default applies — MinIO, for
-        example, sets neither, so its console is routed at the{" "}
+        When a plug doesn&apos;t set it, the default applies — MinIO, for
+        example, does not set it, so its console is routed at the{" "}
         <Code>&lt;service&gt;.localhost</Code> default,{" "}
         <Code>http://minio.localhost</Code>.
       </P>

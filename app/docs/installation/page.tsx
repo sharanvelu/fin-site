@@ -83,17 +83,17 @@ export default function InstallationPage() {
           [
             "3",
             <>
-              Symlinks <Code>~/.local/lib/fin-cli/fin</Code> into the first
-              writable PATH dir (tries <Code>/usr/local/bin</Code>,{" "}
-              <Code>~/.local/bin</Code>, <Code>~/bin</Code>, <Code>~/.bin</Code>
-              ; override with <Code>FIN_BIN_DIR</Code>).
+              On macOS, strips the <Code>com.apple.quarantine</Code> attribute
+              so the unsigned binary runs without a Gatekeeper prompt.
             </>,
           ],
           [
             "4",
             <>
-              On macOS, strips the <Code>com.apple.quarantine</Code> attribute
-              so the unsigned binary runs without a Gatekeeper prompt.
+              Symlinks <Code>~/.local/lib/fin-cli/fin</Code> into the first
+              writable PATH dir (tries <Code>/usr/local/bin</Code>,{" "}
+              <Code>~/.local/bin</Code>, <Code>~/bin</Code>, <Code>~/.bin</Code>
+              ; override with <Code>FIN_BIN_DIR</Code>).
             </>,
           ],
           [

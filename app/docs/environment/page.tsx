@@ -34,10 +34,9 @@ export default function EnvironmentPage() {
       <Callout kind="info" title="Precedence">
         Process environment variables prefixed <Code>FIN_</Code>,{" "}
         <Code>DB_</Code>, or <Code>REDIS_</Code> take precedence over the{" "}
-        <Code>.env</Code> file, so{" "}
-        <Code>FIN_SITE=other.localhost fin up</Code> works for a one-off
-        override. Process variables with any other prefix are ignored — only
-        the <Code>.env</Code> value is read.
+        <Code>.env</Code> file, so <Code>FIN_SITE=other.localhost fin up</Code>{" "}
+        works for a one-off override. Process variables with any other prefix
+        are ignored — only the <Code>.env</Code> value is read.
       </Callout>
 
       <H2 id="project">Project variables</H2>
@@ -98,9 +97,9 @@ export default function EnvironmentPage() {
       <P>
         Optional overrides a plug author <em>may</em> set inside a{" "}
         <Code>ContainerSpec</Code>&apos;s environment (not in your
-        project&apos;s <Code>.env</Code>), read back by Fin&apos;s
-        orchestrator. When a plug doesn&apos;t set one, the default applies —
-        MinIO, for example, sets neither, so its console is routed at the{" "}
+        project&apos;s <Code>.env</Code>), read back by Fin&apos;s orchestrator.
+        When a plug doesn&apos;t set one, the default applies — MinIO, for
+        example, sets neither, so its console is routed at the{" "}
         <Code>&lt;service&gt;.localhost</Code> default,{" "}
         <Code>http://minio.localhost</Code>.
       </P>

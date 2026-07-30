@@ -6,8 +6,12 @@ import { Icon } from "./icons";
 export function PageHeader({ title, lead }: { title: string; lead?: string }) {
   return (
     <div className="mb-10">
-      <h1 className="text-3xl font-bold tracking-tight text-fg sm:text-4xl">{title}</h1>
-      {lead && <p className="mt-4 text-lg leading-relaxed text-fg-muted">{lead}</p>}
+      <h1 className="text-3xl font-bold tracking-tight text-fg sm:text-4xl">
+        {title}
+      </h1>
+      {lead && (
+        <p className="mt-4 text-lg leading-relaxed text-fg-muted">{lead}</p>
+      )}
     </div>
   );
 }
@@ -20,7 +24,11 @@ export function H2({ id, children }: { id: string; children: ReactNode }) {
       className="group mt-14 mb-4 scroll-mt-24 flex items-center gap-2 text-2xl font-semibold tracking-tight text-fg"
     >
       {children}
-      <a href={`#${id}`} className="anchor-link text-fg-faint hover:text-accent" aria-label="Link to section">
+      <a
+        href={`#${id}`}
+        className="anchor-link text-fg-faint hover:text-accent"
+        aria-label="Link to section"
+      >
         <Icon.link className="h-4 w-4" />
       </a>
     </h2>
@@ -29,7 +37,10 @@ export function H2({ id, children }: { id: string; children: ReactNode }) {
 
 export function H3({ id, children }: { id?: string; children: ReactNode }) {
   return (
-    <h3 id={id} className="mt-9 mb-3 scroll-mt-24 text-lg font-semibold text-fg">
+    <h3
+      id={id}
+      className="mt-9 mb-3 scroll-mt-24 text-lg font-semibold text-fg"
+    >
       {children}
     </h3>
   );
@@ -40,14 +51,34 @@ export function P({ children }: { children: ReactNode }) {
 }
 
 export function Lead({ children }: { children: ReactNode }) {
-  return <p className="my-4 text-lg leading-relaxed text-fg-muted">{children}</p>;
+  return (
+    <p className="my-4 text-lg leading-relaxed text-fg-muted">{children}</p>
+  );
 }
 
 type CalloutKind = "info" | "warn" | "tip";
-const CALLOUT_STYLES: Record<CalloutKind, { border: string; bg: string; label: string; dot: string }> = {
-  info: { border: "border-term-cyan/30", bg: "bg-term-cyan/5", label: "text-term-cyan", dot: "ℹ" },
-  warn: { border: "border-term-yellow/30", bg: "bg-term-yellow/5", label: "text-term-yellow", dot: "⚠" },
-  tip: { border: "border-accent/30", bg: "bg-accent/5", label: "text-accent", dot: "✓" },
+const CALLOUT_STYLES: Record<
+  CalloutKind,
+  { border: string; bg: string; label: string; dot: string }
+> = {
+  info: {
+    border: "border-term-cyan/30",
+    bg: "bg-term-cyan/5",
+    label: "text-term-cyan",
+    dot: "ℹ",
+  },
+  warn: {
+    border: "border-term-yellow/30",
+    bg: "bg-term-yellow/5",
+    label: "text-term-yellow",
+    dot: "⚠",
+  },
+  tip: {
+    border: "border-accent/30",
+    bg: "bg-accent/5",
+    label: "text-accent",
+    dot: "✓",
+  },
 };
 
 export function Callout({
@@ -95,7 +126,10 @@ export function RefTable({
         </thead>
         <tbody>
           {rows.map((row, i) => (
-            <tr key={i} className="border-b border-border-soft last:border-0 hover:bg-panel/30">
+            <tr
+              key={i}
+              className="border-b border-border-soft last:border-0 hover:bg-panel/30"
+            >
               {row.map((cell, j) => (
                 <td key={j} className="px-4 py-2.5 align-top text-fg-muted">
                   {cell}
@@ -134,7 +168,9 @@ export function Pager({
           className="group flex flex-1 flex-col rounded-card border border-border p-4 transition hover:border-accent"
         >
           <span className="text-xs text-fg-faint">Previous</span>
-          <span className="mt-1 font-medium text-fg group-hover:text-accent">{prev.title}</span>
+          <span className="mt-1 font-medium text-fg group-hover:text-accent">
+            {prev.title}
+          </span>
         </Link>
       ) : (
         <div className="flex-1" />
@@ -145,7 +181,9 @@ export function Pager({
           className="group flex flex-1 flex-col items-end rounded-card border border-border p-4 text-right transition hover:border-accent"
         >
           <span className="text-xs text-fg-faint">Next</span>
-          <span className="mt-1 font-medium text-fg group-hover:text-accent">{next.title}</span>
+          <span className="mt-1 font-medium text-fg group-hover:text-accent">
+            {next.title}
+          </span>
         </Link>
       ) : (
         <div className="flex-1" />

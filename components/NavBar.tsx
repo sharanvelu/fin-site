@@ -26,7 +26,9 @@ export function NavBar() {
 
         <nav className="ml-2 hidden items-center gap-1 md:flex">
           {LINKS.map((l) => {
-            const active = pathname === l.href || (l.href !== "/" && pathname.startsWith(l.href));
+            const active =
+              pathname === l.href ||
+              (l.href !== "/" && pathname.startsWith(l.href));
             return (
               <Link
                 key={l.href}

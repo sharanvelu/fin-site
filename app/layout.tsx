@@ -22,7 +22,15 @@ export const metadata: Metadata = {
   },
   description:
     "Fin is a fast, opinionated, plugin-driven CLI for running local-development Docker containers. One command up: proxy, shared databases, and your app — routed by friendly *.localhost hostnames.",
-  keywords: ["fin", "docker", "laravel", "local development", "cli", "traefik", "containers"],
+  keywords: [
+    "fin",
+    "docker",
+    "laravel",
+    "local development",
+    "cli",
+    "traefik",
+    "containers",
+  ],
   openGraph: {
     title: "Fin — run local dev containers, extensible via plugs",
     description:

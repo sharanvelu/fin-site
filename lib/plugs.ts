@@ -64,7 +64,8 @@ export const PLUGS: Plug[] = [
     title: "Laravel",
     type: "APP",
     version: "1.0.0",
-    summary: "Laravel / PHP application runtime (nginx + php-fpm + supervisord).",
+    summary:
+      "Laravel / PHP application runtime (nginx + php-fpm + supervisord).",
     overview: [
       "Runs your Laravel project in a single container that bundles nginx, php-fpm, and supervisord (the sharanvelu/laravel-php image, tagged by FIN_PHP_VERSION and overridable with FIN_DOCKER_IMAGE). The project directory is bind-mounted at /var/www/html, and the container serves on port 80 behind the Traefik proxy at your FIN_SITE hostname.",
       "The host's ~/.composer directory is shared into the container, so the composer cache and configuration stay warm across projects and container rebuilds. The plug also opts into CA-certificate installation (install_certs) — any .pem/.crt in ~/.fin/certs is installed into the container's trust store on every fin up.",
@@ -99,16 +100,52 @@ FIN_PLUGS=mysql,redis`,
       },
     ],
     commands: [
-      { name: "artisan", args: "...", aliases: "art", desc: "Run an artisan command (interactive — prompts work)." },
-      { name: "composer", args: "...", desc: "Run composer in the container (interactive)." },
-      { name: "tinker", desc: "Open a Laravel tinker session (REPL — exit/Ctrl-D ends it)." },
-      { name: "migrate", args: "[fresh|rollback|refresh]", desc: "Run migrations — a scope maps to migrate:<scope>." },
-      { name: "seed", args: "[class]", desc: "Run database seeders (db:seed, with --class when given)." },
-      { name: "make", args: "<type> <name> ...", desc: "Run artisan make:<type>." },
-      { name: "queue", args: "[work|listen|restart]", desc: "Run the queue (default listen)." },
-      { name: "bash", aliases: "shell", desc: "Open an interactive shell in the container." },
+      {
+        name: "artisan",
+        args: "...",
+        aliases: "art",
+        desc: "Run an artisan command (interactive — prompts work).",
+      },
+      {
+        name: "composer",
+        args: "...",
+        desc: "Run composer in the container (interactive).",
+      },
+      {
+        name: "tinker",
+        desc: "Open a Laravel tinker session (REPL — exit/Ctrl-D ends it).",
+      },
+      {
+        name: "migrate",
+        args: "[fresh|rollback|refresh]",
+        desc: "Run migrations — a scope maps to migrate:<scope>.",
+      },
+      {
+        name: "seed",
+        args: "[class]",
+        desc: "Run database seeders (db:seed, with --class when given).",
+      },
+      {
+        name: "make",
+        args: "<type> <name> ...",
+        desc: "Run artisan make:<type>.",
+      },
+      {
+        name: "queue",
+        args: "[work|listen|restart]",
+        desc: "Run the queue (default listen).",
+      },
+      {
+        name: "bash",
+        aliases: "shell",
+        desc: "Open an interactive shell in the container.",
+      },
       { name: "phpunit", args: "...", desc: "Run ./vendor/bin/phpunit." },
-      { name: "bin", args: "<command> ...", desc: "Run ./vendor/bin/<command>." },
+      {
+        name: "bin",
+        args: "<command> ...",
+        desc: "Run ./vendor/bin/<command>.",
+      },
       { name: "php", args: "...", desc: "Run the php binary." },
     ],
     containers: [
@@ -136,7 +173,8 @@ FIN_PLUGS=mysql,redis`,
     title: "Django",
     type: "APP",
     version: "1.0.0",
-    summary: "Django application runtime (python + runserver, live autoreload).",
+    summary:
+      "Django application runtime (python + runserver, live autoreload).",
     overview: [
       "Runs your Django project on the official python:<FIN_PYTHON_VERSION>-slim image (there is no maintained official Django image) with the built-in development server. Because the project directory is bind-mounted at /app, runserver's polling autoreloader picks up source edits and restarts automatically — live refresh on save, reliable across Docker bind mounts including macOS.",
       "On container start the plug optionally apt-installs FIN_APT_PACKAGES (for native deps that compile from source), pip-installs your FIN_REQUIREMENTS file preferring binary wheels, then execs manage.py runserver 0.0.0.0:<FIN_DJANGO_PORT>. A shared fin_pip_cache volume keeps pip's cache warm, so reinstalls after fin down are fast.",
@@ -182,25 +220,52 @@ FIN_PLUGS=postgres,redis
       },
     ],
     commands: [
-      { name: "manage", args: "<cmd> ...", desc: "Run a manage.py command (passthrough). Prompting subcommands (shell, dbshell, createsuperuser, changepassword) attach stdin automatically." },
+      {
+        name: "manage",
+        args: "<cmd> ...",
+        desc: "Run a manage.py command (passthrough). Prompting subcommands (shell, dbshell, createsuperuser, changepassword) attach stdin automatically.",
+      },
       { name: "migrate", args: "...", desc: "Apply database migrations." },
-      { name: "makemigrations", args: "...", aliases: "mm", desc: "Create new migrations from model changes." },
+      {
+        name: "makemigrations",
+        args: "...",
+        aliases: "mm",
+        desc: "Create new migrations from model changes.",
+      },
       { name: "shell", desc: "Open the Django shell (interactive)." },
       { name: "dbshell", desc: "Open the database shell (interactive)." },
-      { name: "createsuperuser", aliases: "csu", desc: "Create a Django superuser (interactive)." },
+      {
+        name: "createsuperuser",
+        aliases: "csu",
+        desc: "Create a Django superuser (interactive).",
+      },
       { name: "collectstatic", args: "...", desc: "Collect static files." },
       { name: "test", args: "...", desc: "Run the Django test suite." },
-      { name: "startapp", args: "<name> [path]", desc: "Scaffold a new Django app." },
+      {
+        name: "startapp",
+        args: "<name> [path]",
+        desc: "Scaffold a new Django app.",
+      },
       { name: "pip", args: "...", desc: "Run pip in the container." },
-      { name: "python", args: "...", aliases: "py", desc: "Run python — opens an interactive REPL when given no args." },
-      { name: "bash", aliases: "sh", desc: "Open an interactive shell in the container." },
+      {
+        name: "python",
+        args: "...",
+        aliases: "py",
+        desc: "Run python — opens an interactive REPL when given no args.",
+      },
+      {
+        name: "bash",
+        aliases: "sh",
+        desc: "Open an interactive shell in the container.",
+      },
     ],
     containers: [
       {
         label: "Primary container",
         name: "<project>-web",
         image: "python:<FIN_PYTHON_VERSION>-slim",
-        ports: "<FIN_DJANGO_PORT> (random host port — Traefik routes by FIN_SITE)",
+        ports:
+          "<FIN_DJANGO_PORT> (random host port — Traefik routes by FIN_SITE)",
         volumes: [
           "project directory → /app",
           "fin_pip_cache → /root/.cache/pip (shared warm pip cache)",

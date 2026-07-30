@@ -5,11 +5,15 @@ import { COMMAND_GROUPS } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Commands",
-  description: "The full Fin command reference — system, containers, images, plugs, and Laravel.",
+  description:
+    "The full Fin command reference — system, containers, images, plugs, and Laravel.",
 };
 
 function slug(s: string) {
-  return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+  return s
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
 }
 
 export default function CommandsPage() {
@@ -21,9 +25,9 @@ export default function CommandsPage() {
       />
 
       <Callout kind="info" title="Per-command help">
-        Run <Code>fin &lt;command&gt; --help</Code> or <Code>fin help &lt;command&gt;</Code>{" "}
-        for usage, subcommands, options, and examples — for reserved commands{" "}
-        <em>and</em> plug commands.
+        Run <Code>fin &lt;command&gt; --help</Code> or{" "}
+        <Code>fin help &lt;command&gt;</Code> for usage, subcommands, options,
+        and examples — for reserved commands <em>and</em> plug commands.
       </Callout>
 
       {COMMAND_GROUPS.map((group) => (
@@ -41,7 +45,9 @@ export default function CommandsPage() {
                 <div className="shrink-0 sm:w-64">
                   <code className="font-mono text-sm">
                     <span className="text-accent">fin {cmd.name}</span>
-                    {cmd.args && <span className="text-term-yellow"> {cmd.args}</span>}
+                    {cmd.args && (
+                      <span className="text-term-yellow"> {cmd.args}</span>
+                    )}
                   </code>
                   {cmd.aliases && (
                     <div className="mt-0.5 font-mono text-xs text-fg-faint">
@@ -49,7 +55,9 @@ export default function CommandsPage() {
                     </div>
                   )}
                 </div>
-                <p className="text-sm leading-relaxed text-fg-muted">{cmd.desc}</p>
+                <p className="text-sm leading-relaxed text-fg-muted">
+                  {cmd.desc}
+                </p>
               </div>
             ))}
           </div>

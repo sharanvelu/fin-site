@@ -1,6 +1,14 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { PageHeader, H2, P, Code, Callout, Pager, RefTable } from "@/components/Prose";
+import {
+  PageHeader,
+  H2,
+  P,
+  Code,
+  Callout,
+  Pager,
+  RefTable,
+} from "@/components/Prose";
 import { CodeBlock } from "@/components/CodeBlock";
 import { PLUGS, getPlug } from "@/lib/plugs";
 
@@ -29,11 +37,17 @@ function pagerFor(slug: string) {
   const i = PLUGS.findIndex((p) => p.slug === slug);
   const prev =
     i > 0
-      ? { title: `${PLUGS[i - 1].title} plug`, href: `/docs/plugs/${PLUGS[i - 1].slug}` }
+      ? {
+          title: `${PLUGS[i - 1].title} plug`,
+          href: `/docs/plugs/${PLUGS[i - 1].slug}`,
+        }
       : { title: "Environment variables", href: "/docs/environment" };
   const next =
     i < PLUGS.length - 1
-      ? { title: `${PLUGS[i + 1].title} plug`, href: `/docs/plugs/${PLUGS[i + 1].slug}` }
+      ? {
+          title: `${PLUGS[i + 1].title} plug`,
+          href: `/docs/plugs/${PLUGS[i + 1].slug}`,
+        }
       : { title: "Commands", href: "/docs/commands" };
   return { prev, next };
 }
@@ -68,9 +82,9 @@ export default async function PlugPage({
       <H2 id="install">Install</H2>
       <CodeBlock lang="bash" prompt code={`fin plugs install ${info.slug}`} />
       <P>
-        Or skip the manual step — <Code>fin up</Code> offers to install any plug your{" "}
-        <Code>.env</Code> references (<Code>FIN_APP</Code> / <Code>FIN_PLUGS</Code>) that
-        isn&apos;t installed yet.
+        Or skip the manual step — <Code>fin up</Code> offers to install any plug
+        your <Code>.env</Code> references (<Code>FIN_APP</Code> /{" "}
+        <Code>FIN_PLUGS</Code>) that isn&apos;t installed yet.
       </P>
 
       <H2 id="overview">Overview</H2>
@@ -89,8 +103,9 @@ export default async function PlugPage({
               </>
             ) : (
               <>
-                List <Code>{info.slug}</Code> in <Code>FIN_PLUGS</Code> (or enable it
-                globally with <Code>fin config enable {info.slug}</Code>) and run{" "}
+                List <Code>{info.slug}</Code> in <Code>FIN_PLUGS</Code> (or
+                enable it globally with{" "}
+                <Code>fin config enable {info.slug}</Code>) and run{" "}
                 <Code>fin up</Code>:
               </>
             )}
@@ -103,8 +118,9 @@ export default async function PlugPage({
         <>
           <H2 id="env">Environment variables</H2>
           <P>
-            Declared via the plug&apos;s <Code>env_spec()</Code> — <Code>fin up</Code>{" "}
-            validates them and reports every problem at once.
+            Declared via the plug&apos;s <Code>env_spec()</Code> —{" "}
+            <Code>fin up</Code> validates them and reports every problem at
+            once.
           </P>
           <RefTable
             head={["Variable", "Required", "Default", "Meaning"]}
@@ -131,9 +147,9 @@ export default async function PlugPage({
         <>
           <H2 id="commands">Commands</H2>
           <P>
-            Available when <Code>FIN_APP={info.slug}</Code> (or <Code>{info.slug}</Code>{" "}
-            is in <Code>FIN_PLUGS</Code>). Run any of them with <Code>--help</Code> for
-            details.
+            Available when <Code>FIN_APP={info.slug}</Code> (or{" "}
+            <Code>{info.slug}</Code> is in <Code>FIN_PLUGS</Code>). Run any of
+            them with <Code>--help</Code> for details.
           </P>
           <div className="my-5 overflow-hidden rounded-card border border-border">
             {info.commands.map((cmd, i) => (
@@ -146,7 +162,9 @@ export default async function PlugPage({
                 <div className="shrink-0 sm:w-64">
                   <code className="font-mono text-sm">
                     <span className="text-accent">fin {cmd.name}</span>
-                    {cmd.args && <span className="text-term-yellow"> {cmd.args}</span>}
+                    {cmd.args && (
+                      <span className="text-term-yellow"> {cmd.args}</span>
+                    )}
                   </code>
                   {cmd.aliases && (
                     <div className="mt-0.5 font-mono text-xs text-fg-faint">
@@ -154,7 +172,9 @@ export default async function PlugPage({
                     </div>
                   )}
                 </div>
-                <p className="text-sm leading-relaxed text-fg-muted">{cmd.desc}</p>
+                <p className="text-sm leading-relaxed text-fg-muted">
+                  {cmd.desc}
+                </p>
               </div>
             ))}
           </div>
@@ -192,8 +212,8 @@ export default async function PlugPage({
             ])}
           />
           <P>
-            Credentials are fixed and shared across every project on the machine —
-            this is a local-development convenience, not a production setup.
+            Credentials are fixed and shared across every project on the machine
+            — this is a local-development convenience, not a production setup.
           </P>
         </>
       )}

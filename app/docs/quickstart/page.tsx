@@ -16,7 +16,9 @@ export default function QuickstartPage() {
       />
 
       <H2 id="configure">1. Configure .env</H2>
-      <P>From inside a Laravel project, create or edit <Code>.env</Code>:</P>
+      <P>
+        From inside a Laravel project, create or edit <Code>.env</Code>:
+      </P>
       <CodeBlock
         filename=".env"
         lang="dotenv"
@@ -53,8 +55,8 @@ REDIS_HOST=fin_redis`}
         On a fresh install, <Code>fin up</Code> notices that the{" "}
         <Code>laravel</Code>, <Code>mysql</Code>, and <Code>redis</Code> plugs
         from your <Code>.env</Code> aren&apos;t installed and asks{" "}
-        <Code>Do you want to install them to proceed?</Code> Accept (the
-        default is Yes) and it fetches each from the plug catalog into{" "}
+        <Code>Do you want to install them to proceed?</Code> Accept (the default
+        is Yes) and it fetches each from the plug catalog into{" "}
         <Code>~/.fin/plugs</Code>, then continues — no separate{" "}
         <Code>fin plugs install</Code> step needed.
       </Callout>
@@ -87,9 +89,9 @@ fin down all      # everything Fin manages`}
       />
 
       <Callout kind="warn" title="down all is global">
-        <Code>fin down all</Code> removes <em>every</em> Fin-managed container across all
-        projects — including other projects&apos; app containers. Use plain{" "}
-        <Code>fin down</Code> to scope to the current project.
+        <Code>fin down all</Code> removes <em>every</em> Fin-managed container
+        across all projects — including other projects&apos; app containers. Use
+        plain <Code>fin down</Code> to scope to the current project.
       </Callout>
 
       <Pager

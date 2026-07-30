@@ -49,13 +49,19 @@ export function Sidebar() {
         onClick={() => setOpen((v) => !v)}
         className="mb-4 flex items-center gap-2 rounded-lg border border-border bg-panel px-3 py-2 text-sm text-fg-muted lg:hidden"
       >
-        {open ? <Icon.close className="h-4 w-4" /> : <Icon.menu className="h-4 w-4" />}
+        {open ? (
+          <Icon.close className="h-4 w-4" />
+        ) : (
+          <Icon.menu className="h-4 w-4" />
+        )}
         Menu
       </button>
 
       {/* Desktop sidebar */}
       <aside className="hidden lg:block">
-        <div className="sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto pr-2">{tree}</div>
+        <div className="sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto pr-2">
+          {tree}
+        </div>
       </aside>
 
       {/* Mobile drawer */}

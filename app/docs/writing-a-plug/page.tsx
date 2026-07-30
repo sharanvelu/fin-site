@@ -1,5 +1,13 @@
 import type { Metadata } from "next";
-import { PageHeader, H2, H3, P, Code, Callout, Pager } from "@/components/Prose";
+import {
+  PageHeader,
+  H2,
+  H3,
+  P,
+  Code,
+  Callout,
+  Pager,
+} from "@/components/Prose";
 import { CodeBlock } from "@/components/CodeBlock";
 
 export const metadata: Metadata = {
@@ -83,54 +91,62 @@ export default function WritingAPlugPage() {
 
       <H2 id="asset">Minimal ASSET plug</H2>
       <P>
-        <Code>&lt;PLUGS_DIR&gt;/memcached.py</Code> — a shared service container with a fixed
-        name:
+        <Code>&lt;PLUGS_DIR&gt;/memcached.py</Code> — a shared service container
+        with a fixed name:
       </P>
       <CodeBlock filename="memcached.py" lang="python" code={ASSET_PLUG} />
       <P>
-        Enable it to auto-start with <Code>fin config enable memcached</Code>, or list it in{" "}
-        <Code>FIN_PLUGS</Code>.
+        Enable it to auto-start with <Code>fin config enable memcached</Code>,
+        or list it in <Code>FIN_PLUGS</Code>.
       </P>
 
       <H2 id="app">Minimal APP plug</H2>
-      <P><Code>&lt;PLUGS_DIR&gt;/static.py</Code> — a primary container with a command:</P>
+      <P>
+        <Code>&lt;PLUGS_DIR&gt;/static.py</Code> — a primary container with a
+        command:
+      </P>
       <CodeBlock filename="static.py" lang="python" code={APP_PLUG} />
 
       <H2 id="anatomy">Anatomy</H2>
       <H3>primary_spec(env)</H3>
       <P>
         (APP) Returns the one primary <Code>ContainerSpec</Code>. Set{" "}
-        <Code>web_exposed=True</Code> + <Code>web_port=…</Code> to get Traefik routing from{" "}
-        <Code>FIN_SITE</Code>. Set <Code>workdir_mount</Code> and <Code>up</Code> bind-mounts
-        the project directory there.
+        <Code>web_exposed=True</Code> + <Code>web_port=…</Code> to get Traefik
+        routing from <Code>FIN_SITE</Code>. Set <Code>workdir_mount</Code> and{" "}
+        <Code>up</Code> bind-mounts the project directory there.
       </P>
       <H3>asset_specs(env)</H3>
       <P>
-        (ASSET) Returns shared-container specs, each with a fixed <Code>container_name</Code>.
+        (ASSET) Returns shared-container specs, each with a fixed{" "}
+        <Code>container_name</Code>.
       </P>
       <H3>commands()</H3>
       <P>
-        Maps a name to a <Code>PlugCommand(name, handler, help, aliases)</Code>. Handlers
-        receive <Code>(ctx: PlugContext, args: list[str])</Code> and return an exit code. Use{" "}
-        <Code>ctx.exec([...], workdir=...)</Code> to run inside the primary container.
+        Maps a name to a <Code>PlugCommand(name, handler, help, aliases)</Code>.
+        Handlers receive <Code>(ctx: PlugContext, args: list[str])</Code> and
+        return an exit code. Use <Code>ctx.exec([...], workdir=...)</Code> to
+        run inside the primary container.
       </P>
       <H3>env_spec()</H3>
       <P>
-        Declares required/optional vars, <Code>choices</Code>, types, and defaults.{" "}
-        <Code>EnvSpec.validate(env)</Code> raises one friendly error listing every problem.
+        Declares required/optional vars, <Code>choices</Code>, types, and
+        defaults. <Code>EnvSpec.validate(env)</Code> raises one friendly error
+        listing every problem.
       </P>
       <H3>CA certificates</H3>
       <P>
-        Set <Code>install_certs=True</Code> on a <Code>ContainerSpec</Code> and Fin installs
-        every <Code>.pem</Code>/<Code>.crt</Code> in <Code>~/.fin/certs</Code> into that
-        container&apos;s trust store on each <Code>fin up</Code>. Defaults target Debian
-        (<Code>/usr/local/share/ca-certificates</Code> + <Code>update-ca-certificates</Code>);
-        override <Code>cert_dir</Code> / <Code>cert_update_cmd</Code> for other bases.
+        Set <Code>install_certs=True</Code> on a <Code>ContainerSpec</Code> and
+        Fin installs every <Code>.pem</Code>/<Code>.crt</Code> in{" "}
+        <Code>~/.fin/certs</Code> into that container&apos;s trust store on each{" "}
+        <Code>fin up</Code>. Defaults target Debian (
+        <Code>/usr/local/share/ca-certificates</Code> +{" "}
+        <Code>update-ca-certificates</Code>); override <Code>cert_dir</Code> /{" "}
+        <Code>cert_update_cmd</Code> for other bases.
       </P>
 
       <Callout kind="tip" title="Auto-discovery">
-        After adding a plug, <Code>fin plugs list</Code> re-scans the directory and refreshes
-        the SQLite registry automatically — no registration step.
+        After adding a plug, <Code>fin plugs list</Code> re-scans the directory
+        and refreshes the SQLite registry automatically — no registration step.
       </Callout>
 
       <Pager

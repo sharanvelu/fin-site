@@ -66,7 +66,9 @@ export function PlugCatalog() {
                     {p.type}
                   </span>
                 </td>
-                <td className="px-4 py-2.5 align-top text-fg-muted">{p.summary}</td>
+                <td className="px-4 py-2.5 align-top text-fg-muted">
+                  {p.summary}
+                </td>
                 <td className="px-4 py-2.5 align-top font-mono text-xs text-fg-faint">
                   {p.commands.length > 0
                     ? p.commands.map((c) => c.name).join(", ")

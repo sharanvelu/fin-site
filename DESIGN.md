@@ -4,8 +4,8 @@ This is the documentation **website** for Fin (the CLI). It is a standalone
 Next.js app, not part of the CLI itself. This document explains how the site is
 built, why it is built that way, and the conventions that keep it consistent.
 
-> Scope note: everything here describes the *website*. The Fin CLI it documents
-> (commands, plugs, env vars) lives in the parent repo; this app only *renders*
+> Scope note: everything here describes the _website_. The Fin CLI it documents
+> (commands, plugs, env vars) lives in the parent repo; this app only _renders_
 > docs about it. The site is intended to live in its own repository and is
 > git-ignored inside the Fin CLI repo.
 
@@ -32,13 +32,13 @@ built, why it is built that way, and the conventions that keep it consistent.
 
 ## Stack
 
-| Piece | Choice | Notes |
-| --- | --- | --- |
-| Framework | **Next.js 16.2.9**, App Router | Turbopack is the default bundler in Next 16 (dev and build). |
-| UI runtime | **React 19.2** | Server Components by default; `"use client"` only where needed. |
-| Styling | **Tailwind CSS v4** | CSS-first config via `@theme` in `app/globals.css`. There is **no `tailwind.config.js`**. Wired through `postcss.config.mjs` with `@tailwindcss/postcss`. |
-| Language | **TypeScript** (strict) | `tsconfig.json`, path alias `@/*` → repo root. |
-| Fonts | **Geist** + **Geist Mono** | Loaded with `next/font/google` in `app/layout.tsx`, exposed as CSS vars `--font-geist-sans` / `--font-geist-mono`. |
+| Piece      | Choice                         | Notes                                                                                                                                                     |
+| ---------- | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Framework  | **Next.js 16.2.9**, App Router | Turbopack is the default bundler in Next 16 (dev and build).                                                                                              |
+| UI runtime | **React 19.2**                 | Server Components by default; `"use client"` only where needed.                                                                                           |
+| Styling    | **Tailwind CSS v4**            | CSS-first config via `@theme` in `app/globals.css`. There is **no `tailwind.config.js`**. Wired through `postcss.config.mjs` with `@tailwindcss/postcss`. |
+| Language   | **TypeScript** (strict)        | `tsconfig.json`, path alias `@/*` → repo root.                                                                                                            |
+| Fonts      | **Geist** + **Geist Mono**     | Loaded with `next/font/google` in `app/layout.tsx`, exposed as CSS vars `--font-geist-sans` / `--font-geist-mono`.                                        |
 
 `next.config.ts` is intentionally empty — defaults only.
 
@@ -51,17 +51,17 @@ to maintain.
 
 Key tokens and the utilities they generate:
 
-| Token (in `@theme`) | Value | Generated utilities (examples) |
-| --- | --- | --- |
-| `--color-bg` | `#0a0e14` | `bg-bg`, `text-bg`, `border-bg` |
-| `--color-bg-soft` | `#0e131b` | `bg-bg-soft` |
-| `--color-panel` / `--color-panel-2` | `#121823` / `#161d2a` | `bg-panel`, `bg-panel-2` |
-| `--color-border` / `--color-border-soft` | `#20293a` / `#1a212e` | `border-border`, `border-border-soft` |
-| `--color-fg` / `--color-fg-muted` / `--color-fg-faint` | `#e6edf3` / `#9aa7b8` / `#6b7888` | `text-fg`, `text-fg-muted`, `text-fg-faint` |
+| Token (in `@theme`)                                                | Value                             | Generated utilities (examples)                                                          |
+| ------------------------------------------------------------------ | --------------------------------- | --------------------------------------------------------------------------------------- |
+| `--color-bg`                                                       | `#0a0e14`                         | `bg-bg`, `text-bg`, `border-bg`                                                         |
+| `--color-bg-soft`                                                  | `#0e131b`                         | `bg-bg-soft`                                                                            |
+| `--color-panel` / `--color-panel-2`                                | `#121823` / `#161d2a`             | `bg-panel`, `bg-panel-2`                                                                |
+| `--color-border` / `--color-border-soft`                           | `#20293a` / `#1a212e`             | `border-border`, `border-border-soft`                                                   |
+| `--color-fg` / `--color-fg-muted` / `--color-fg-faint`             | `#e6edf3` / `#9aa7b8` / `#6b7888` | `text-fg`, `text-fg-muted`, `text-fg-faint`                                             |
 | `--color-accent` / `--color-accent-strong` / `--color-accent-soft` | `#2dd4bf` / `#14b8a6` / `#0d3530` | `text-accent`, `bg-accent`, `border-accent`, `hover:bg-accent-strong`, `bg-accent-soft` |
-| `--color-term-cyan/green/yellow/red/magenta` | terminal palette | `text-term-green`, `bg-term-red/70`, `text-term-yellow`, … |
-| `--font-mono` / `--font-sans` | Geist Mono / Geist stacks | `font-mono`, `font-sans` |
-| `--radius-card` | `14px` | `rounded-card` (cards, code blocks, callouts) |
+| `--color-term-cyan/green/yellow/red/magenta`                       | terminal palette                  | `text-term-green`, `bg-term-red/70`, `text-term-yellow`, …                              |
+| `--font-mono` / `--font-sans`                                      | Geist Mono / Geist stacks         | `font-mono`, `font-sans`                                                                |
+| `--radius-card`                                                    | `14px`                            | `rounded-card` (cards, code blocks, callouts)                                           |
 
 Notes:
 
@@ -106,7 +106,7 @@ Two nested layouts:
 - Renders the persistent chrome: `<NavBar />`, `<main>`, `<Footer />`.
 - The `<body>` is a flex column (`flex min-h-full flex-col`) with
   **`overflow-x-hidden`** and the base `bg-bg text-fg` colors. The
-  `overflow-x-hidden` is load-bearing — see *Responsiveness* below.
+  `overflow-x-hidden` is load-bearing — see _Responsiveness_ below.
 
 ### Docs layout — `app/docs/layout.tsx`
 
@@ -129,15 +129,15 @@ Two nested layouts:
 
 ## Component catalog
 
-| Component | Type | Why |
-| --- | --- | --- |
-| `NavBar` | **client** (`"use client"`) | Uses `usePathname()` to highlight the active top-level link. |
-| `Sidebar` | **client** | `usePathname()` for active state + `useState` for the mobile drawer. Renders from `NAV`. |
-| `CodeBlock` | **client** | Clipboard copy (`navigator.clipboard`) + `useState` for the copied flag. Also does the custom highlighting. |
-| `Footer` | **server** | Static links and text; no interactivity. |
-| `Terminal` | **server** | A static, pre-rendered `fin up` output mockup. The blinking cursor is pure CSS (`.cursor-blink`), so no JS is needed. |
-| `Prose` exports | **server** | `PageHeader`, `H2`, `H3`, `P`, `Lead`, `Callout`, `RefTable`, `Code`, `Pager` — presentational primitives with no state. |
-| `icons` | **server** | Inline SVGs: `FinLogo` plus an `Icon` map (`bolt`, `plug`, `route`, `stack`, `shield`, `feather`, `copy`, `check`, `terminal`, `arrow`, `github`, `menu`, `close`, `link`). All `currentColor`, 1.6px stroke. |
+| Component       | Type                        | Why                                                                                                                                                                                                           |
+| --------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `NavBar`        | **client** (`"use client"`) | Uses `usePathname()` to highlight the active top-level link.                                                                                                                                                  |
+| `Sidebar`       | **client**                  | `usePathname()` for active state + `useState` for the mobile drawer. Renders from `NAV`.                                                                                                                      |
+| `CodeBlock`     | **client**                  | Clipboard copy (`navigator.clipboard`) + `useState` for the copied flag. Also does the custom highlighting.                                                                                                   |
+| `Footer`        | **server**                  | Static links and text; no interactivity.                                                                                                                                                                      |
+| `Terminal`      | **server**                  | A static, pre-rendered `fin up` output mockup. The blinking cursor is pure CSS (`.cursor-blink`), so no JS is needed.                                                                                         |
+| `Prose` exports | **server**                  | `PageHeader`, `H2`, `H3`, `P`, `Lead`, `Callout`, `RefTable`, `Code`, `Pager` — presentational primitives with no state.                                                                                      |
+| `icons`         | **server**                  | Inline SVGs: `FinLogo` plus an `Icon` map (`bolt`, `plug`, `route`, `stack`, `shield`, `feather`, `copy`, `check`, `terminal`, `arrow`, `github`, `menu`, `close`, `link`). All `currentColor`, 1.6px stroke. |
 
 Rule of thumb: a component is a Server Component **unless** it needs a browser
 hook (`usePathname`, `useState`, `navigator`, event handlers) — then and only then
@@ -161,7 +161,7 @@ does it get `"use client"`. Only three components cross that line.
 It also supports a `prompt` prop that prepends a non-selectable `$ ` to each
 non-empty, non-comment line (so users copy clean commands), and a `filename` /
 `lang` header bar with traffic-light dots and a hover-reveal copy button. This is
-intentionally *good enough* coloring for the few languages the docs use, not a
+intentionally _good enough_ coloring for the few languages the docs use, not a
 general highlighter — the trade-off is zero dependencies and full control.
 
 ## Content architecture

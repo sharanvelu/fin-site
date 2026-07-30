@@ -392,7 +392,7 @@ REDIS_PORT=6379`,
     version: "1.0.0",
     summary: "Shared MinIO object storage container.",
     overview: [
-      "One MinIO container shared across every Fin project (fixed name fin_minio) — an S3-compatible object store for local development. The S3 API listens on port 9000 and the web console on port 9001; both are published to the host.",
+      "One MinIO container shared across every Fin project (fixed name fin_minio) — an S3-compatible object store for local development. The S3 API listens on port 9000 and the web console on port 9001; both are published to the host, and the console is also routed through the proxy at http://minio.localhost.",
       "Object data is stored in ~/Documents/minio/data on the host (a bind mount, not a named volume), so buckets survive container removal and are directly inspectable.",
     ],
     envExample: `FIN_PLUGS=minio
@@ -415,7 +415,7 @@ AWS_USE_PATH_STYLE_ENDPOINT=true`,
     connection: [
       ["S3 endpoint (from containers)", "http://fin_minio:9000"],
       ["S3 endpoint (from your machine)", "http://127.0.0.1:9000"],
-      ["Web console", "http://127.0.0.1:9001"],
+      ["Web console", "http://minio.localhost · http://127.0.0.1:9001"],
       ["Access key", "fin"],
       ["Secret key", "password"],
     ],

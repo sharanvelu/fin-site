@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FinLogo, Icon } from "./icons";
+import { FALLBACK_VERSION } from "@/lib/version";
 
 const LINKS = [
   { title: "Docs", href: "/docs" },
@@ -10,7 +11,7 @@ const LINKS = [
   { title: "Plugs", href: "/docs/plugs" },
 ];
 
-export function NavBar({ version = "v0.1.6" }: { version?: string }) {
+export function NavBar({ version = FALLBACK_VERSION }: { version?: string }) {
   const pathname = usePathname();
 
   return (

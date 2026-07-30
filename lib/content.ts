@@ -120,19 +120,35 @@ export const COMMAND_GROUPS: CommandGroup[] = [
   },
   {
     group: "Images",
-    blurb: "Manage the images Fin uses (the proxy plus every loaded plug's images).",
+    blurb:
+      "Manage the images Fin uses (the proxy plus every loaded plug's images).",
     commands: [
-      { name: "images ls", aliases: "img, list", desc: "List Fin-related images." },
+      {
+        name: "images ls",
+        aliases: "img, list",
+        desc: "List Fin-related images.",
+      },
       { name: "images rm", args: "<image> [-f]", desc: "Remove an image." },
-      { name: "images prune", desc: "Remove dangling images (asks for confirmation)." },
+      {
+        name: "images prune",
+        desc: "Remove dangling images (asks for confirmation).",
+      },
     ],
   },
   {
     group: "Plugs",
     blurb: "Discover and manage installed plugs.",
     commands: [
-      { name: "plugs list", aliases: "ls", desc: "List installed plugs and their commands." },
-      { name: "plugs info", args: "<name>", desc: "Show one plug's metadata and path." },
+      {
+        name: "plugs list",
+        aliases: "ls",
+        desc: "List installed plugs and their commands.",
+      },
+      {
+        name: "plugs info",
+        args: "<name>",
+        desc: "Show one plug's metadata and path.",
+      },
       {
         name: "plugs search",
         args: "<query>",
@@ -143,13 +159,17 @@ export const COMMAND_GROUPS: CommandGroup[] = [
         args: "<name|git-url>",
         desc: "Install a plug by catalog name (e.g. laravel) or from a git URL.",
       },
-      { name: "plugs uninstall", args: "<name>", desc: "Remove an installed plug from disk." },
+      {
+        name: "plugs uninstall",
+        args: "<name>",
+        desc: "Remove an installed plug from disk.",
+      },
     ],
   },
   {
     group: "AI agents",
     blurb:
-      "Generate instruction files that teach AI coding agents (Claude Code, Cursor, Codex, Copilot, …) to run project commands through fin — command tables are built from the installed plugs' metadata. Commit the files; re-run after changing FIN_APP/FIN_PLUGS or upgrading plugs.",
+      "Generate instruction files that teach AI coding agents — including Claude Code, Cursor, Codex, Copilot, Gemini, Aider and more — to run project commands through fin. Command tables are built from the installed plugs' metadata. Commit the files; re-run after changing FIN_APP/FIN_PLUGS or upgrading plugs.",
     commands: [
       {
         name: "agents list",
@@ -167,16 +187,41 @@ export const COMMAND_GROUPS: CommandGroup[] = [
     group: "Laravel plug",
     blurb: "Available when FIN_APP=laravel (or laravel is in FIN_PLUGS).",
     commands: [
-      { name: "artisan", args: "...", aliases: "art", desc: "Run an artisan command." },
+      {
+        name: "artisan",
+        args: "...",
+        aliases: "art",
+        desc: "Run an artisan command.",
+      },
       { name: "composer", args: "...", desc: "Run composer in the container." },
       { name: "tinker", desc: "Open an interactive Laravel tinker session." },
-      { name: "migrate", args: "[fresh|rollback|refresh]", desc: "Run migrations." },
+      {
+        name: "migrate",
+        args: "[fresh|rollback|refresh]",
+        desc: "Run migrations.",
+      },
       { name: "seed", args: "[class]", desc: "Run database seeders." },
-      { name: "make", args: "<type> <name> ...", desc: "Run artisan make:<type>." },
-      { name: "queue", args: "[work|listen|restart]", desc: "Run the queue (default listen)." },
-      { name: "bash", aliases: "shell", desc: "Open an interactive shell in the container." },
+      {
+        name: "make",
+        args: "<type> <name> ...",
+        desc: "Run artisan make:<type>.",
+      },
+      {
+        name: "queue",
+        args: "[work|listen|restart]",
+        desc: "Run the queue (default listen).",
+      },
+      {
+        name: "bash",
+        aliases: "shell",
+        desc: "Open an interactive shell in the container.",
+      },
       { name: "phpunit", args: "...", desc: "Run ./vendor/bin/phpunit." },
-      { name: "bin", args: "<command> ...", desc: "Run ./vendor/bin/<command>." },
+      {
+        name: "bin",
+        args: "<command> ...",
+        desc: "Run ./vendor/bin/<command>.",
+      },
       { name: "php", args: "...", desc: "Run the php binary." },
     ],
   },
@@ -192,41 +237,68 @@ export const PROJECT_ENV: EnvVar[] = [
   },
   {
     name: "FIN_PLUGS",
-    meaning: "Comma-separated list of auxiliary plugs to consider/start (e.g. mysql,redis).",
+    meaning:
+      "Comma-separated list of auxiliary plugs to consider/start (e.g. mysql,redis).",
   },
   {
     name: "FIN_SITE",
-    meaning: "The host the app is routed at (e.g. myapp.localhost). Drives Traefik routing.",
+    meaning:
+      "The host the app is routed at (e.g. myapp.localhost). Drives Traefik routing.",
   },
   {
     name: "FIN_CONTAINER_NAME",
-    meaning: "Override the project name (defaults to the cwd basename, lowercased).",
-  },
-  {
-    name: "FIN_DOCKER_IMAGE",
     meaning:
-      "Override the primary container image. (Laravel) defaults to sharanvelu/laravel-php:<FIN_PHP_VERSION>.",
+      "Override the project name (defaults to the cwd basename, lowercased).",
   },
   {
     name: "FIN_OVERRIDE_ASSETS",
-    meaning: "Comma-separated assets to start, overriding the persisted enable flags.",
-  },
-  {
-    name: "FIN_PHP_VERSION",
-    meaning: "(Laravel) PHP/image tag, e.g. 8.3, 8.2, latest.",
-    default: "latest",
-  },
-  {
-    name: "FIN_COMPOSER_VERSION",
-    meaning: "(Laravel) Composer major version, 1 or 2.",
-    default: "2",
+    meaning:
+      "Comma-separated assets to start, overriding the persisted enable flags.",
   },
   {
     name: "DB_CONNECTION, DB_DATABASE, DB_HOST…",
     meaning:
       "Standard Laravel DB config. fin up auto-creates DB_DATABASE in the shared MySQL/Postgres engine.",
   },
-  { name: "REDIS_*", meaning: "Standard Redis config (parsed alongside DB_*)." },
+  {
+    name: "REDIS_*",
+    meaning: "Standard Redis config (parsed alongside DB_*).",
+  },
+];
+
+/**
+ * Variables declared by the Laravel plug's env_spec() — read by the plug, not
+ * by the fin core. Other plugs declare their own (see each plug's page).
+ */
+export const LARAVEL_PLUG_ENV: EnvVar[] = [
+  {
+    name: "FIN_PHP_VERSION",
+    meaning: "PHP/image tag, e.g. 8.3, 8.2, latest.",
+    default: "latest",
+  },
+  {
+    name: "FIN_COMPOSER_VERSION",
+    meaning: "Composer major version, 1 or 2.",
+    default: "2",
+  },
+  {
+    name: "FIN_DOCKER_IMAGE",
+    meaning: "Override the primary container image.",
+    default: "sharanvelu/laravel-php:<FIN_PHP_VERSION>",
+  },
+];
+
+/**
+ * Variables set by a plug inside a ContainerSpec's environment and read back
+ * by Fin's orchestrator — plug-author-facing, not project .env config.
+ */
+export const PLUG_CONTAINER_ENV: EnvVar[] = [
+  {
+    name: "FIN_ASSET_SITE",
+    meaning:
+      "Set inside a ContainerSpec's environment by an asset plug to choose the hostname its web UI is routed at. Read by Fin's orchestrator when the asset is web-exposed — e.g. MinIO's console.",
+    default: "<service>.localhost",
+  },
 ];
 
 export const SYSTEM_ENV: EnvVar[] = [
@@ -235,7 +307,11 @@ export const SYSTEM_ENV: EnvVar[] = [
     meaning: "Per-user data dir — holds config, registry, certs, and plugs.",
     default: "~/.fin",
   },
-  { name: "FIN_PROXY_IMAGE", meaning: "Traefik image for the proxy.", default: "traefik:v3.6" },
+  {
+    name: "FIN_PROXY_IMAGE",
+    meaning: "Traefik image for the proxy.",
+    default: "traefik:v3.6",
+  },
   {
     name: "FIN_PLUGS_REPO_RAW",
     meaning:
@@ -266,7 +342,10 @@ export const LABELS: Label[] = [
   { name: "FIN_TYPE", value: "app | asset | global | proxy" },
   { name: "FIN_SERVICE", value: "web, mysql, redis, postgres, proxy, …" },
   { name: "FIN_SITE", value: "the routed URL, or -" },
-  { name: "FIN_PROJECT", value: "the project name, or - for shared containers" },
+  {
+    name: "FIN_PROJECT",
+    value: "the project name, or - for shared containers",
+  },
 ];
 
 export const HIGHLIGHTS = [
@@ -310,12 +389,13 @@ export const INSTALLER_ENV: EnvVar[] = [
   {
     name: "FIN_VERSION",
     meaning:
-      "Release to install — \"latest\" resolves via GitHub's releases/latest redirect to the newest published release; a version like 0.1.0 pins the immutable v0.1.0 release.",
+      'Release to install — "latest" resolves via GitHub\'s releases/latest redirect to the newest published release; a version like 0.1.0 pins the immutable v0.1.0 release.',
     default: "latest",
   },
   {
     name: "FIN_HOME_DIR",
-    meaning: "Install location — the package root holding the fin executable and its _internal/ runtime.",
+    meaning:
+      "Install location — the package root holding the fin executable and its _internal/ runtime.",
     default: "$HOME/.local/lib/fin-cli",
   },
   {
@@ -325,7 +405,8 @@ export const INSTALLER_ENV: EnvVar[] = [
   },
   {
     name: "FIN_DATA_DIR",
-    meaning: "Per-user data dir — the plugs directory is created at <FIN_DATA_DIR>/plugs.",
+    meaning:
+      "Per-user data dir — the plugs directory is created at <FIN_DATA_DIR>/plugs.",
     default: "$HOME/.fin",
   },
   {

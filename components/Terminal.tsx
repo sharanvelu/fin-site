@@ -7,9 +7,12 @@ type Line = { text: string; tone?: "ok" | "muted" | "accent" | "cmd" | "head" };
 
 const LINES: Line[] = [
   { text: "$ fin up", tone: "cmd" },
-  { text: "✓ Started fin_proxy (traefik) — dashboard at http://traefik.localhost", tone: "ok" },
+  {
+    text: "✓ Started fin_proxy (traefik) — dashboard at http://traefik.localhost",
+    tone: "ok",
+  },
   { text: "✓ Started fin_mysql (mysql:8.0)", tone: "ok" },
-  { text: "✓ Started myapp-web (php:8.3)", tone: "ok" },
+  { text: "✓ Started myapp-web (sharanvelu/laravel-php:8.3)", tone: "ok" },
   { text: "✓ Database myapp is ready (MySQL).", tone: "ok" },
   { text: "✓ myapp is up at http://myapp.localhost", tone: "ok" },
 ];
@@ -40,7 +43,9 @@ export function Terminal() {
           <span className="h-3 w-3 rounded-full bg-term-yellow/80" />
           <span className="h-3 w-3 rounded-full bg-term-green/80" />
         </span>
-        <span className="ml-2 font-mono text-xs text-fg-faint">~/projects/myapp — fin</span>
+        <span className="ml-2 font-mono text-xs text-fg-faint">
+          ~/projects/myapp — fin
+        </span>
       </div>
       <pre className="overflow-x-auto px-5 py-4 font-mono text-[13px] leading-relaxed">
         {LINES.map((l, i) => (

@@ -2,7 +2,7 @@
 
 This is the documentation **website** for the Fin CLI (a Next.js app), not the
 CLI. If a task mentions Fin commands, plugs, or env vars, you are only changing
-how they are *rendered* here — the CLI lives in the parent repo.
+how they are _rendered_ here — the CLI lives in the parent repo.
 
 ## ⚠️ This is NOT the Next.js you know
 
@@ -71,7 +71,7 @@ Don't use long relative paths (`../../components/...`) across directories.
   the sidebar nav, and the landing highlights are data there. Pages render from
   it — don't hard-code command/env data into a page.
 - **Server Components by default; `"use client"` only when required.** Add the
-  `"use client"` directive *only* if a component uses a browser hook or API:
+  `"use client"` directive _only_ if a component uses a browser hook or API:
   `usePathname`, `useState`/`useEffect`, event handlers, `navigator.*`. Today
   only `NavBar`, `Sidebar`, and `CodeBlock` are client components. Everything
   else (`Prose`, `Terminal`, `Footer`, `icons`) is a server component — keep it
@@ -85,7 +85,7 @@ Don't use long relative paths (`../../components/...`) across directories.
   value. **Do not** write arbitrary `var()` utilities like
   `rounded-[var(--radius-card)]` or `bg-[var(--color-bg-soft)]` — Tailwind v4's
   Turbopack **dev** scanner mis-parses these against Next's streaming HTML and
-  produces broken CSS (a 500 in `next dev` that does *not* surface in
+  produces broken CSS (a 500 in `next dev` that does _not_ surface in
   `next build`). Always use the token utility instead.
 - **Keep it static.** No server-only data fetching, no API routes, no databases.
   Every route must prerender (`npm run build` should show `○ (Static)` for all
@@ -161,7 +161,7 @@ scripts in `package.json`.)
   `<body>`, start grids at `grid-cols-1`, use `minmax(0,1fr)` for the docs
   content track, and keep `min-w-0` on flex/grid children that hold scrollable
   content (wide code blocks). Removing any of these can reintroduce a horizontal
-  scroll bug on small screens. See DESIGN.md → *Responsiveness & overflow*.
+  scroll bug on small screens. See DESIGN.md → _Responsiveness & overflow_.
 - **Throwaway artifacts.** Anything under `.playwright-mcp/`, ad-hoc screenshots,
   and `.next/` is disposable build/inspection output — don't commit it or treat
   it as source.

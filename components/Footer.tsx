@@ -14,16 +14,28 @@ export function Footer() {
             </span>
           </div>
           <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-fg-muted">
-            <Link href="/docs" className="hover:text-accent">Docs</Link>
-            <Link href="/docs/commands" className="hover:text-accent">Commands</Link>
-            <Link href="/docs/writing-a-plug" className="hover:text-accent">Write a plug</Link>
-            <a href="https://github.com/" className="hover:text-accent" target="_blank" rel="noreferrer">
+            <Link href="/docs" className="hover:text-accent">
+              Docs
+            </Link>
+            <Link href="/docs/commands" className="hover:text-accent">
+              Commands
+            </Link>
+            <Link href="/docs/writing-a-plug" className="hover:text-accent">
+              Write a plug
+            </Link>
+            <a
+              href="https://github.com/sharanvelu/fin"
+              className="hover:text-accent"
+              target="_blank"
+              rel="noreferrer"
+            >
               GitHub
             </a>
           </div>
         </div>
         <p className="mt-8 text-xs text-fg-faint">
-          MIT licensed. Built with Typer, Rich, the Docker SDK for Python, and Traefik.
+          MIT licensed. Built with Typer, Rich, the Docker SDK for Python, and
+          Traefik.
         </p>
       </div>
     </footer>

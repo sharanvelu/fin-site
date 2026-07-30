@@ -112,23 +112,66 @@ function highlight(line: string, lang?: string) {
   // bash / generic: color the `fin` command and flags
   const parts = line.split(/(\s+)/);
   return parts.map((tok, i) => {
-    if (tok === "fin") return <span key={i} className="text-accent font-semibold">{tok}</span>;
-    if (tok.startsWith("-")) return <span key={i} className="text-term-yellow">{tok}</span>;
+    if (tok === "fin")
+      return (
+        <span key={i} className="text-accent font-semibold">
+          {tok}
+        </span>
+      );
+    if (tok.startsWith("-"))
+      return (
+        <span key={i} className="text-term-yellow">
+          {tok}
+        </span>
+      );
     return <span key={i}>{tok}</span>;
   });
 }
 
 const PY_KEYWORDS = new Set([
-  "from", "import", "class", "def", "return", "if", "else", "elif", "for",
-  "in", "not", "and", "or", "None", "True", "False", "self", "list", "str", "int",
+  "from",
+  "import",
+  "class",
+  "def",
+  "return",
+  "if",
+  "else",
+  "elif",
+  "for",
+  "in",
+  "not",
+  "and",
+  "or",
+  "None",
+  "True",
+  "False",
+  "self",
+  "list",
+  "str",
+  "int",
 ]);
 
 function pythonHighlight(line: string) {
   const tokens = line.split(/(\s+|[(){}\[\],:."'])/);
   return tokens.map((tok, i) => {
-    if (PY_KEYWORDS.has(tok)) return <span key={i} className="text-term-magenta">{tok}</span>;
-    if (/^["'].*["']$/.test(tok)) return <span key={i} className="text-term-green">{tok}</span>;
-    if (/^[A-Z][A-Za-z0-9_]+$/.test(tok)) return <span key={i} className="text-term-cyan">{tok}</span>;
+    if (PY_KEYWORDS.has(tok))
+      return (
+        <span key={i} className="text-term-magenta">
+          {tok}
+        </span>
+      );
+    if (/^["'].*["']$/.test(tok))
+      return (
+        <span key={i} className="text-term-green">
+          {tok}
+        </span>
+      );
+    if (/^[A-Z][A-Za-z0-9_]+$/.test(tok))
+      return (
+        <span key={i} className="text-term-cyan">
+          {tok}
+        </span>
+      );
     return <span key={i}>{tok}</span>;
   });
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { PageHeader, H2, P, Code, Callout, Pager, RefTable } from "@/components/Prose";
 import { CodeBlock } from "@/components/CodeBlock";
+import { PlugCatalog } from "@/components/PlugCatalog";
 
 export const metadata: Metadata = {
   title: "Plugs",
@@ -12,7 +13,7 @@ export default function PlugsPage() {
     <>
       <PageHeader
         title="Plugs"
-        lead="A plug is a Python package that extends Fin. Plugs describe containers and contribute commands — but they never touch Docker themselves."
+        lead="A plug is a single Python file that extends Fin. Plugs describe containers and contribute commands — but they never touch Docker themselves."
       />
 
       <H2 id="types">The three plug types</H2>
@@ -26,16 +27,18 @@ export default function PlugsPage() {
       />
 
       <H2 id="layout">Directory layout</H2>
-      <P>Plugs live under the plugs directory, grouped by type:</P>
+      <P>
+        Plugs live as flat <Code>.py</Code> files directly under the plugs directory — the
+        plug&apos;s type comes from the class&apos;s <Code>plug_type</Code> attribute, not
+        from where the file sits:
+      </P>
       <CodeBlock
         code={`<PLUGS_DIR>/
-  App/<name>/__init__.py      # PlugType.APP
-  Asset/<name>/__init__.py    # PlugType.ASSET
-  Global/<name>/__init__.py   # PlugType.GLOBAL`}
+  <name>.py                   # one FinPlug subclass; filename == plug name`}
       />
       <P>
         <Code>PLUGS_DIR</Code> is fixed at <Code>~/.fin/plugs</Code> (it moves with{" "}
-        <Code>FIN_DATA_DIR</Code>). The loader imports each package by file path, finds
+        <Code>FIN_DATA_DIR</Code>). The loader imports each file by path, finds
         the single class that subclasses <Code>FinPlug</Code> (<strong>only</strong>{" "}
         <Code>FinPlug</Code> subclasses count), instantiates it, and calls{" "}
         <Code>setup()</Code>. A bad plug logs a warning and is skipped — it never crashes Fin.
@@ -47,21 +50,17 @@ export default function PlugsPage() {
         Docker itself. Fin&apos;s orchestrator is the sole code path that touches the daemon.
       </Callout>
 
-      <H2 id="bundled">Bundled plugs</H2>
+      <H2 id="bundled">Catalog plugs</H2>
       <P>
         Plugs are <strong>not</strong> embedded in the <Code>fin</Code> binary — they stay as
-        plain <Code>.py</Code> files loaded at runtime. The installer seeds these into{" "}
-        <Code>~/.fin/plugs</Code> by cloning the <Code>fin-plugs</Code> repo:
+        plain <Code>.py</Code> files loaded at runtime, installed into{" "}
+        <Code>~/.fin/plugs</Code> from the official plug catalog (the{" "}
+        <Code>fin-plugs</Code> repo). <Code>fin plugs install &lt;name&gt;</Code> fetches{" "}
+        <Code>plugs/&lt;name&gt;.py</Code> over plain HTTPS; <Code>fin plugs search</Code>{" "}
+        reads the catalog index. Each plug below has its own page with commands, env
+        vars, and connection details:
       </P>
-      <RefTable
-        head={["Plug", "Type", "Provides"]}
-        rows={[
-          [<Code>laravel</Code>, "APP", "PHP/Laravel container + artisan, composer, tinker, migrate, seed, make, queue, bash, phpunit, bin, php."],
-          [<Code>mysql</Code>, "ASSET", <>Shared <Code>fin_mysql</Code> container.</>],
-          [<Code>postgres</Code>, "ASSET", <>Shared <Code>fin_postgres</Code> container.</>],
-          [<Code>redis</Code>, "ASSET", <>Shared <Code>fin_redis</Code> container.</>],
-        ]}
-      />
+      <PlugCatalog />
 
       <H2 id="managing">Managing plugs</H2>
       <CodeBlock
@@ -69,13 +68,23 @@ export default function PlugsPage() {
         prompt
         code={`fin plugs list                 # installed plugs and their commands
 fin plugs info laravel         # one plug's metadata and path
-fin plugs install <git-url>    # install a plug from a git URL
+fin plugs search <query>       # search the remote plug catalog
+fin plugs install <name>       # install by catalog name (or a git URL)
 fin plugs uninstall <name>     # remove an installed plug`}
       />
       <P>
         A SQLite registry at <Code>~/.fin/registry.db</Code> caches plug metadata for fast
         lookups; it refreshes automatically whenever you list plugs.
       </P>
+
+      <Callout kind="tip" title="fin up installs missing plugs for you">
+        Before starting anything, <Code>fin up</Code> checks that the{" "}
+        <Code>FIN_APP</Code> plug and every plug in <Code>FIN_PLUGS</Code> is
+        installed. If any are missing it offers to install them from the catalog
+        (defaults to Yes) and then continues — decline and it
+        aborts, listing the exact <Code>fin plugs install &lt;name&gt;</Code>{" "}
+        commands to run yourself.
+      </Callout>
 
       <Pager
         prev={{ title: "How it works", href: "/docs/how-it-works" }}

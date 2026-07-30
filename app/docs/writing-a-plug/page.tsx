@@ -78,23 +78,23 @@ export default function WritingAPlugPage() {
     <>
       <PageHeader
         title="Writing a plug"
-        lead="A plug is a Python package under the plugs directory, grouped by type. Only classes that subclass FinPlug count — the loader finds them, instantiates, and calls setup()."
+        lead="A plug is a single Python file in the plugs directory — its type is declared by the class's plug_type attribute, not by where the file sits. Only classes that subclass FinPlug count — the loader finds them, instantiates, and calls setup()."
       />
 
       <H2 id="asset">Minimal ASSET plug</H2>
       <P>
-        <Code>Asset/memcached/__init__.py</Code> — a shared service container with a fixed
+        <Code>&lt;PLUGS_DIR&gt;/memcached.py</Code> — a shared service container with a fixed
         name:
       </P>
-      <CodeBlock filename="Asset/memcached/__init__.py" lang="python" code={ASSET_PLUG} />
+      <CodeBlock filename="memcached.py" lang="python" code={ASSET_PLUG} />
       <P>
         Enable it to auto-start with <Code>fin config enable memcached</Code>, or list it in{" "}
         <Code>FIN_PLUGS</Code>.
       </P>
 
       <H2 id="app">Minimal APP plug</H2>
-      <P><Code>App/static/__init__.py</Code> — a primary container with a command:</P>
-      <CodeBlock filename="App/static/__init__.py" lang="python" code={APP_PLUG} />
+      <P><Code>&lt;PLUGS_DIR&gt;/static.py</Code> — a primary container with a command:</P>
+      <CodeBlock filename="static.py" lang="python" code={APP_PLUG} />
 
       <H2 id="anatomy">Anatomy</H2>
       <H3>primary_spec(env)</H3>

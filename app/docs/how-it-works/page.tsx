@@ -74,7 +74,7 @@ export default function HowItWorksPage() {
   1. reserved (system) commands   ← owned by Fin, never delegated
   2. the FIN_APP / FIN_PLUG plug   ← primary app plug
   3. the FIN_PLUGS plugs           ← auxiliary plugs, in declared order
-  4. GLOBAL plugs                  ← everything under Global/`}
+  4. GLOBAL plugs                  ← every plug declaring PlugType.GLOBAL`}
       />
       <P>
         Reserved commands always win and are never delegated to a plug. Plug lookup is lazy

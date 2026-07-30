@@ -139,8 +139,8 @@ fin ps`}
           </h2>
           <p className="mx-auto mt-3 max-w-2xl text-fg-muted">
             Every app type and service is a <em>plug</em> — a small declarative class that
-            describes containers and contributes commands. Bundled plugs cover Laravel,
-            MySQL, PostgreSQL and Redis. Write your own in a few lines of Python.
+            describes containers and contributes commands. Catalog plugs cover Laravel,
+            Django, MySQL, PostgreSQL, Redis and MinIO. Write your own in a few lines of Python.
           </p>
           <div className="mt-7 flex flex-wrap justify-center gap-3">
             <Link

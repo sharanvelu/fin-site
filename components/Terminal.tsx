@@ -1,6 +1,6 @@
 /**
- * A static terminal mockup that reproduces real `fin up` / `fin ps` output,
- * styled to match Fin's Rich CLI (cyan accents, green checkmarks, grouped ps).
+ * A static terminal mockup that reproduces real `fin up` output,
+ * styled to match Fin's Rich CLI (cyan accents, green checkmarks).
  */
 
 type Line = { text: string; tone?: "ok" | "muted" | "accent" | "cmd" | "head" };

@@ -390,7 +390,7 @@ REDIS_PORT=6379`,
     title: "MinIO",
     type: "ASSET",
     version: "1.0.0",
-    summary: "Shared MinIO object storage container.",
+    summary: "Shared Minio Object Storage Container.",
     overview: [
       "One MinIO container shared across every Fin project (fixed name fin_minio) — an S3-compatible object store for local development. The S3 API listens on port 9000 and the web console on port 9001; both are published to the host, and the console is also routed through the proxy at http://minio.localhost.",
       "Object data is stored in ~/Documents/minio/data on the host (a bind mount, not a named volume), so buckets survive container removal and are directly inspectable.",

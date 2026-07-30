@@ -33,7 +33,8 @@ export default function HowItWorksPage() {
         so it routes a container <strong>only</strong> when that container
         carries Traefik labels. Entrypoints <Code>web</Code> (<Code>:80</Code>)
         and <Code>websecure</Code> (<Code>:443</Code>) are published to the
-        host, and the dashboard lives at <Code>http://traefik.localhost</Code>.
+        host, and the dashboard lives at <Code>http://traefik.localhost</Code>{" "}
+        (its port <Code>:8080</Code> is published to the host too).
         Both <Code>fin up</Code> and <Code>fin asset up</Code> ensure the proxy
         is running first.
       </P>

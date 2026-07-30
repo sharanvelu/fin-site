@@ -21,7 +21,7 @@ export default function CommandsPage() {
     <>
       <PageHeader
         title="Command reference"
-        lead="Every Fin command, grouped by area. A sub-command resolves in order: reserved (system) → FIN_APP plug → FIN_PLUGS plugs → GLOBAL plugs."
+        lead="Fin's commands, grouped by area — plug-specific commands (like Django's) live on each plug's page. A sub-command resolves in order: reserved (system) → FIN_APP plug → FIN_PLUGS plugs → GLOBAL plugs."
       />
 
       <Callout kind="info" title="Per-command help">

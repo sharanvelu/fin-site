@@ -1,14 +1,16 @@
-# Static analysis for every PR.
+# Test suite for every PR.
 #
-# Required status check: "Static Analysis Gate" (only the gate — both work
-# jobs are path-filtered and may legitimately be skipped).
+# Required status check: "Tests Gate" (make ONLY the gate required — the work
+# job is path-filtered and may legitimately be skipped, which would wedge a
+# PR if it were required directly).
 #
-#   types      tsc --noEmit over the whole site (config in tsconfig.json).
-#              The codebase is type-clean, so this is fully blocking.
-#   workflows  runs ONLY when .github/** changes: actionlint (syntax/shell
-#              mistakes) + zizmor (workflow security audit).
+# Layout ("changes → work → gate"):
+#   changes  detects whether site code or tests changed (forced true on dispatch)
+#   tests    Vitest unit suite (jsdom + React Testing Library): content/plug
+#            data integrity and component behavior
+#   gate     always runs; fails iff a needed job failed or was cancelled
 
-name: static analysis
+name: tests
 
 on:
   pull_request:
@@ -18,7 +20,7 @@ on:
 permissions: {}
 
 concurrency:
-  group: static-analyze-${{ github.event.pull_request.number || github.ref }}
+  group: tests-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -31,12 +33,13 @@ jobs:
       pull-requests: read
     outputs:
       site: ${{ steps.filter.outputs.site || 'true' }}
-      workflows: ${{ steps.filter.outputs.workflows || 'true' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
+      # On workflow_dispatch there is no PR diff — the step is skipped and the
+      # `|| 'true'` fallback above forces every domain on.
       - name: Filter changed paths
         id: filter
         if: github.event_name == 'pull_request'
@@ -53,13 +56,11 @@ jobs:
               - 'tsconfig.json'
               - 'next.config.ts'
               - 'vitest.config.mts'
-              - '.github/workflows/static-code-analyze.yml'
+              - '.github/workflows/tests.yml'
               - '.github/actions/setup/**'
-            workflows:
-              - '.github/**'
 
-  types:
-    name: tsc --noEmit
+  tests:
+    name: vitest
     needs: changes
     if: needs.changes.outputs.site == 'true'
     runs-on: ubuntu-latest
@@ -73,37 +74,12 @@ jobs:
 
       - uses: ./.github/actions/setup
 
-      - name: tsc
-        run: npx tsc --noEmit
-
-  workflows:
-    name: workflow lint + audit
-    needs: changes
-    if: needs.changes.outputs.workflows == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: actionlint
-        uses: raven-actions/actionlint@3d39aea434753780c3b3d4a1a31c854b4dbf49d7 # v2.2.0
-        with:
-          fail-on-error: true
-
-      # advanced-security: false = report findings in the job log and fail the
-      # job, instead of uploading SARIF (which would need GHAS + extra perms).
-      - name: zizmor security audit
-        uses: zizmorcore/zizmor-action@6fc4b006235f201fdab3722e17240ab420d580e5 # v0.6.1
-        with:
-          advanced-security: false
+      - name: Run tests
+        run: npm test
 
   gate:
-    name: Static Analysis Gate
-    needs: [changes, types, workflows]
+    name: Tests Gate
+    needs: [changes, tests]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 5

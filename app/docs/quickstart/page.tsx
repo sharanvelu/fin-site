@@ -49,6 +49,16 @@ REDIS_HOST=fin_redis`}
       </P>
       <CodeBlock code={`✓ myapp is up at http://myapp.localhost`} />
 
+      <Callout kind="tip" title="No plugs installed yet? fin up handles it">
+        On a fresh install, <Code>fin up</Code> notices that the{" "}
+        <Code>laravel</Code>, <Code>mysql</Code>, and <Code>redis</Code> plugs
+        from your <Code>.env</Code> aren&apos;t installed and asks{" "}
+        <Code>Do you want to install them to proceed?</Code> Accept (the
+        default is Yes) and it fetches each from the plug catalog into{" "}
+        <Code>~/.fin/plugs</Code>, then continues — no separate{" "}
+        <Code>fin plugs install</Code> step needed.
+      </Callout>
+
       <Callout kind="info" title="Connecting to shared assets">
         Assets are reachable on their service hostnames from inside containers:{" "}
         <Code>DB_HOST=fin_mysql</Code>, <Code>REDIS_HOST=fin_redis</Code>,{" "}

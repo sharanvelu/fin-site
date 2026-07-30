@@ -14,7 +14,7 @@ export default function InstallationPage() {
     <>
       <PageHeader
         title="Installation"
-        lead="Fin ships as a prebuilt, standalone binary per OS/arch — it embeds its own Python interpreter, so there's nothing to install but the binary itself. A full install is the binary on your PATH plus plugs in ~/.fin/plugs; the installer does both."
+        lead="Fin ships as a prebuilt, standalone binary per OS/arch — it embeds its own Python interpreter, so there's nothing to install but the binary itself. The installer puts the binary on your PATH; plugs are installed separately with fin plugs install <name> — or fin up offers to install any your project is missing."
       />
 
       <H2 id="prerequisites">Prerequisites</H2>
@@ -22,7 +22,7 @@ export default function InstallationPage() {
         head={["Requirement", "Notes"]}
         rows={[
           ["Docker", "Running locally — Docker Desktop, Colima, Rancher Desktop, or Podman with a Docker-compatible socket. Fin auto-detects the common socket paths."],
-          ["git", <>Used by the installer to seed the plugs, and by <Code>fin plugs install</Code>. Optional — without it, install plugs manually.</>],
+          ["git", <>Only used by <Code>fin plugs install &lt;git-url&gt;</Code>. Optional — catalog installs like <Code>fin plugs install laravel</Code> fetch over plain HTTPS and need no git.</>],
           ["Python 3.11+", <><strong>Only</strong> for installing from source. The prebuilt binary needs no Python, pip, or virtualenv.</>],
         ]}
       />
@@ -34,18 +34,26 @@ export default function InstallationPage() {
         head={["Step", "What happens"]}
         rows={[
           ["1", <>Detects your OS/arch and downloads the matching release tarball <Code>fin-&lt;os&gt;-&lt;arch&gt;.tar.gz</Code> (os ∈ <Code>macos</Code>/<Code>linux</Code>, arch ∈ <Code>arm64</Code>/<Code>x64</Code>) from the GitHub Releases of <Code>sharanvelu/fin</Code>.</>],
-          ["2", <>Unpacks it into <Code>~/.fin-cli</Code> (override with <Code>FIN_HOME_DIR</Code>), giving <Code>~/.fin-cli/fin/fin</Code> plus its <Code>_internal/</Code> runtime.</>],
-          ["3", <>Symlinks <Code>fin</Code> into the first writable PATH dir (tries <Code>/usr/local/bin</Code>, <Code>~/.local/bin</Code>, <Code>~/bin</Code>, <Code>~/.bin</Code>; override with <Code>FIN_BIN_DIR</Code>).</>],
+          ["2", <>Unpacks it into <Code>~/.local/lib/fin-cli</Code> (created if missing; override with <Code>FIN_HOME_DIR</Code>), stripping the tarball&apos;s top-level <Code>fin/</Code> directory so the install dir is the package root: the <Code>fin</Code> executable with its <Code>_internal/</Code> runtime alongside. Entirely user-local — never uses <Code>sudo</Code>.</>],
+          ["3", <>Symlinks <Code>~/.local/lib/fin-cli/fin</Code> into the first writable PATH dir (tries <Code>/usr/local/bin</Code>, <Code>~/.local/bin</Code>, <Code>~/bin</Code>, <Code>~/.bin</Code>; override with <Code>FIN_BIN_DIR</Code>).</>],
           ["4", <>On macOS, strips the <Code>com.apple.quarantine</Code> attribute so the unsigned binary runs without a Gatekeeper prompt.</>],
-          ["5", <>Seeds plugs into <Code>~/.fin/plugs</Code> (override with <Code>FIN_DATA_DIR</Code>) by <Code>git clone</Code>-ing <Code>sharanvelu/fin-plugs</Code> — only if the plugs dir is absent and git is available.</>],
+          ["5", <>Runs <Code>fin --version</Code> once — the first launch of the unsigned binary is slow (~15s while the OS verifies it), so the installer pays that cost up front and your first real command starts instantly.</>],
+          ["6", <>Creates the plugs directory at <Code>~/.fin/plugs</Code> (override with <Code>FIN_DATA_DIR</Code>). Plugs themselves are not bundled — install them with <Code>fin plugs install &lt;name&gt;</Code>, or let <Code>fin up</Code> install what your project needs.</>],
         ]}
       />
+
+      <Callout kind="info" title="Upgrading from an older install">
+        Re-running the one-liner updates in place. Installs made before v0.1.6
+        unpacked to a nested <Code>fin-cli/fin/fin</Code> layout — the installer
+        cleans up that legacy <Code>fin/</Code> directory automatically.
+      </Callout>
 
       <Callout kind="info" title="Plugs are not bundled in the binary">
         A full install is two pieces: the <Code>fin</Code> binary on your PATH{" "}
         <em>and</em> plugs in <Code>~/.fin/plugs</Code>. Plugs stay as plain{" "}
-        <Code>.py</Code> files loaded at runtime — they are seeded from the{" "}
-        <Code>fin-plugs</Code> repo, not embedded in the binary.
+        <Code>.py</Code> files loaded at runtime — install them from the plug
+        catalog with <Code>fin plugs install &lt;name&gt;</Code>, or accept the
+        prompt when <Code>fin up</Code> finds one missing.
       </Callout>
 
       <H2 id="installer-overrides">Installer overrides</H2>
@@ -68,12 +76,14 @@ export default function InstallationPage() {
         lang="bash"
         prompt
         code={`# Pick the artifact for your platform, e.g. fin-macos-arm64.tar.gz
-tar -C ~/.fin-cli -xzf fin-macos-arm64.tar.gz     # → ~/.fin-cli/fin/fin + _internal/
-xattr -dr com.apple.quarantine ~/.fin-cli/fin     # macOS only (unsigned binary)
-ln -sf ~/.fin-cli/fin/fin /usr/local/bin/fin      # or any writable dir on your PATH
+mkdir -p ~/.local/lib/fin-cli ~/.local/bin
+tar -C ~/.local/lib/fin-cli --strip-components=1 \\
+    -xzf fin-macos-arm64.tar.gz                          # → fin + _internal/
+xattr -dr com.apple.quarantine ~/.local/lib/fin-cli      # macOS only (unsigned binary)
+ln -sf ~/.local/lib/fin-cli/fin ~/.local/bin/fin         # or any writable dir on your PATH
 
-# Seed the plugs (not bundled in the binary):
-git clone https://github.com/sharanvelu/fin-plugs.git ~/.fin/plugs
+# Install the plugs you need (not bundled in the binary):
+fin plugs install laravel
 
 fin --help`}
       />
@@ -116,7 +126,7 @@ fin --help`}
         (<Code>PLUGS_DIR</Code> is not configurable independently of <Code>FIN_DATA_DIR</Code>).
         Point it at your plugs checkout once:
       </P>
-      <CodeBlock lang="bash" prompt code={`ln -s <fin-plugs repo> ~/.fin/plugs`} />
+      <CodeBlock lang="bash" prompt code={`ln -s <fin-plugs repo>/plugs ~/.fin/plugs`} />
 
       <Callout kind="warn" title="fin: command not found">
         If the installer&apos;s chosen bin directory isn&apos;t on your PATH, add it — e.g.{" "}

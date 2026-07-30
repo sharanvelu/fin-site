@@ -60,7 +60,7 @@ export default function EnvironmentPage() {
 
       <Pager
         prev={{ title: "Plugs", href: "/docs/plugs" }}
-        next={{ title: "Commands", href: "/docs/commands" }}
+        next={{ title: "Laravel plug", href: "/docs/plugs/laravel" }}
       />
     </>
   );

@@ -67,7 +67,7 @@ fin --version`}
       />
 
       <Pager
-        prev={{ title: "Environment variables", href: "/docs/environment" }}
+        prev={{ title: "MinIO plug", href: "/docs/plugs/minio" }}
         next={{ title: "Writing a plug", href: "/docs/writing-a-plug" }}
       />
     </>

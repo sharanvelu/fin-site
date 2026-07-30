@@ -27,6 +27,17 @@ export const NAV: NavSection[] = [
     ],
   },
   {
+    title: "Plug catalog",
+    items: [
+      { title: "Laravel", href: "/docs/plugs/laravel" },
+      { title: "Django", href: "/docs/plugs/django" },
+      { title: "MySQL", href: "/docs/plugs/mysql" },
+      { title: "PostgreSQL", href: "/docs/plugs/postgres" },
+      { title: "Redis", href: "/docs/plugs/redis" },
+      { title: "MinIO", href: "/docs/plugs/minio" },
+    ],
+  },
+  {
     title: "Reference",
     items: [
       { title: "Commands", href: "/docs/commands" },
@@ -57,7 +68,7 @@ export const COMMAND_GROUPS: CommandGroup[] = [
     commands: [
       {
         name: "up",
-        desc: "Ensure the proxy, start enabled assets, start the primary app container, and auto-create the DB. Requires FIN_APP.",
+        desc: "Ensure the proxy, start enabled assets, start the primary app container, and auto-create the DB. Requires FIN_APP; offers to install any missing FIN_APP/FIN_PLUGS plugs before starting.",
       },
       {
         name: "down",
@@ -88,12 +99,12 @@ export const COMMAND_GROUPS: CommandGroup[] = [
       {
         name: "ps",
         aliases: "status, containers",
-        desc: "List Fin containers grouped by type (App / Asset / Other). -a includes stopped ones.",
+        desc: "List Fin containers grouped by type (App / Asset / Other). -a includes stopped ones; -s/--stats adds live stats.",
       },
       {
         name: "exec",
         args: "<cmd> [args...]",
-        desc: "Exec a command in the current project's primary container.",
+        desc: "Exec a command in the current project's primary container. Interactive commands (fin exec sh/bash) attach stdin from a real terminal, so they behave like a normal shell.",
       },
       {
         name: "inspect",
@@ -125,14 +136,31 @@ export const COMMAND_GROUPS: CommandGroup[] = [
       {
         name: "plugs search",
         args: "<query>",
-        desc: "Search the remote catalog (not yet wired up — reports a clear message).",
+        desc: "Search the remote plug catalog by name/description.",
       },
       {
         name: "plugs install",
         args: "<name|git-url>",
-        desc: "Install a plug from a git URL (catalog install pending).",
+        desc: "Install a plug by catalog name (e.g. laravel) or from a git URL.",
       },
       { name: "plugs uninstall", args: "<name>", desc: "Remove an installed plug from disk." },
+    ],
+  },
+  {
+    group: "AI agents",
+    blurb:
+      "Generate instruction files that teach AI coding agents (Claude Code, Cursor, Codex, Copilot, …) to run project commands through fin — command tables are built from the installed plugs' metadata. Commit the files; re-run after changing FIN_APP/FIN_PLUGS or upgrading plugs.",
+    commands: [
+      {
+        name: "agents list",
+        aliases: "ls",
+        desc: "List supported agents, the file each one writes, and whether it's present.",
+      },
+      {
+        name: "agents install",
+        args: "[agent ...|all]",
+        desc: "Generate instruction files into the current project. Default set: claude, cursor, codex; more by name or with all. Shared files (AGENTS.md, GEMINI.md, …) are only touched inside a fin:agents marker block.",
+      },
     ],
   },
   {
@@ -141,12 +169,12 @@ export const COMMAND_GROUPS: CommandGroup[] = [
     commands: [
       { name: "artisan", args: "...", aliases: "art", desc: "Run an artisan command." },
       { name: "composer", args: "...", desc: "Run composer in the container." },
-      { name: "tinker", desc: "Open a Laravel tinker session." },
+      { name: "tinker", desc: "Open an interactive Laravel tinker session." },
       { name: "migrate", args: "[fresh|rollback|refresh]", desc: "Run migrations." },
       { name: "seed", args: "[class]", desc: "Run database seeders." },
       { name: "make", args: "<type> <name> ...", desc: "Run artisan make:<type>." },
       { name: "queue", args: "[work|listen|restart]", desc: "Run the queue (default listen)." },
-      { name: "bash", aliases: "shell", desc: "Open a shell in the container." },
+      { name: "bash", aliases: "shell", desc: "Open an interactive shell in the container." },
       { name: "phpunit", args: "...", desc: "Run ./vendor/bin/phpunit." },
       { name: "bin", args: "<command> ...", desc: "Run ./vendor/bin/<command>." },
       { name: "php", args: "...", desc: "Run the php binary." },
@@ -174,7 +202,11 @@ export const PROJECT_ENV: EnvVar[] = [
     name: "FIN_CONTAINER_NAME",
     meaning: "Override the project name (defaults to the cwd basename, lowercased).",
   },
-  { name: "FIN_DOCKER_IMAGE", meaning: "Override the primary container image." },
+  {
+    name: "FIN_DOCKER_IMAGE",
+    meaning:
+      "Override the primary container image. (Laravel) defaults to sharanvelu/laravel-php:<FIN_PHP_VERSION>.",
+  },
   {
     name: "FIN_OVERRIDE_ASSETS",
     meaning: "Comma-separated assets to start, overriding the persisted enable flags.",
@@ -205,6 +237,17 @@ export const SYSTEM_ENV: EnvVar[] = [
   },
   { name: "FIN_PROXY_IMAGE", meaning: "Traefik image for the proxy.", default: "traefik:v3.6" },
   {
+    name: "FIN_PLUGS_REPO_RAW",
+    meaning:
+      "Base raw-files URL that catalog installs fetch plugs/<name>.py from — point at a fork/mirror to install from somewhere else.",
+    default: "sharanvelu/fin-plugs @ master",
+  },
+  {
+    name: "FIN_PLUGS_CATALOG_URL",
+    meaning: "URL of the catalog.json that fin plugs search reads.",
+    default: "fin-plugs latest release asset",
+  },
+  {
     name: "FIN_PYTHON",
     meaning:
       "Force a specific Python interpreter for the source-path fin launcher. Not used by the prebuilt binary (it embeds its own interpreter).",
@@ -234,7 +277,7 @@ export const HIGHLIGHTS = [
   },
   {
     title: "Plugin-driven",
-    body: "Apps and services are plugs: small declarative Python classes that describe containers and contribute commands. Bundled plugs cover Laravel, MySQL, PostgreSQL and Redis.",
+    body: "Apps and services are plugs: small declarative Python classes that describe containers and contribute commands. Catalog plugs cover Laravel, Django, MySQL, PostgreSQL, Redis and MinIO.",
     icon: "plug",
   },
   {
@@ -260,20 +303,20 @@ export const HIGHLIGHTS = [
 ];
 
 export const INSTALL_ONE_LINER =
-  'bash -c "$(curl -fsSL https://raw.githubusercontent.com/sharanvelu/fin/main/install.sh)"';
+  'bash -c "$(curl -fsSL https://raw.githubusercontent.com/sharanvelu/fin/master/install.sh)"';
 
 /** Environment overrides read by install.sh (not by the fin binary itself). */
 export const INSTALLER_ENV: EnvVar[] = [
   {
     name: "FIN_VERSION",
     meaning:
-      "Release to install — \"latest\" is the rolling prerelease built from every master merge; a version like 0.1.0 pins the immutable v0.1.0 release.",
+      "Release to install — \"latest\" resolves via GitHub's releases/latest redirect to the newest published release; a version like 0.1.0 pins the immutable v0.1.0 release.",
     default: "latest",
   },
   {
     name: "FIN_HOME_DIR",
-    meaning: "Where the binary is unpacked.",
-    default: "$HOME/.fin-cli",
+    meaning: "Install location — the package root holding the fin executable and its _internal/ runtime.",
+    default: "$HOME/.local/lib/fin-cli",
   },
   {
     name: "FIN_BIN_DIR",
@@ -282,17 +325,12 @@ export const INSTALLER_ENV: EnvVar[] = [
   },
   {
     name: "FIN_DATA_DIR",
-    meaning: "Per-user data dir — plugs are seeded into <FIN_DATA_DIR>/plugs.",
+    meaning: "Per-user data dir — the plugs directory is created at <FIN_DATA_DIR>/plugs.",
     default: "$HOME/.fin",
   },
   {
     name: "FIN_RELEASE_REPO",
     meaning: "GitHub repo hosting the release tarballs.",
     default: "sharanvelu/fin",
-  },
-  {
-    name: "FIN_PLUGS_REPO",
-    meaning: "git URL for the plugs repo the installer seeds from.",
-    default: "sharanvelu/fin-plugs",
   },
 ];

@@ -7,13 +7,10 @@ type Line = { text: string; tone?: "ok" | "muted" | "accent" | "cmd" | "head" };
 
 const LINES: Line[] = [
   { text: "$ fin up", tone: "cmd" },
-  {
-    text: "✓ Started fin_proxy (traefik) — dashboard at http://traefik.localhost",
-    tone: "ok",
-  },
+  { text: "✓ Started fin_proxy (traefik)", tone: "ok" },
   { text: "✓ Started fin_mysql (mysql:8.0)", tone: "ok" },
   { text: "✓ Started myapp-web (sharanvelu/laravel-php:8.3)", tone: "ok" },
-  { text: "✓ Database myapp is ready (MySQL).", tone: "ok" },
+  { text: "✓ Database myapp is ready (MySQL)", tone: "ok" },
   { text: "✓ myapp is up at http://myapp.localhost", tone: "ok" },
 ];
 

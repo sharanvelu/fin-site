@@ -73,7 +73,7 @@ export const COMMAND_GROUPS: CommandGroup[] = [
       {
         name: "down",
         args: "[asset|all] [-f]",
-        desc: "Stop and remove containers. No scope = this project; asset = shared assets; all = everything Fin-managed. -f forces removal.",
+        desc: "Stop and remove containers. No scope = this project; asset = shared assets; all = everything Fin-managed. Running containers are removed without -f; -f force-removes stopped/created ones too.",
       },
       {
         name: "stop",
@@ -87,7 +87,7 @@ export const COMMAND_GROUPS: CommandGroup[] = [
       },
       {
         name: "asset",
-        args: "up|stop|down",
+        args: "up|stop|down [-f]",
         desc: "Manage the shared asset containers independently of any project.",
       },
     ],
@@ -125,7 +125,7 @@ export const COMMAND_GROUPS: CommandGroup[] = [
     commands: [
       {
         name: "images ls",
-        aliases: "img, list",
+        aliases: "img (for images), list (for ls)",
         desc: "List Fin-related images.",
       },
       { name: "images rm", args: "<image> [-f]", desc: "Remove an image." },
@@ -296,7 +296,7 @@ export const PLUG_CONTAINER_ENV: EnvVar[] = [
   {
     name: "FIN_ASSET_SITE",
     meaning:
-      "Set inside a ContainerSpec's environment by an asset plug to choose the hostname its web UI is routed at. Read by Fin's orchestrator when the asset is web-exposed — e.g. MinIO's console.",
+      "An asset plug MAY set this inside a ContainerSpec's environment to override the hostname its web UI is routed at. Read by Fin's orchestrator when the asset is web-exposed; plugs that don't set it (e.g. MinIO) get the <service>.localhost default.",
     default: "<service>.localhost",
   },
 ];

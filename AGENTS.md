@@ -6,7 +6,7 @@ how they are _rendered_ here — the CLI lives in the parent repo.
 
 ## ⚠️ This is NOT the Next.js you know
 
-This project is **Next.js 16** (`16.2.9`) with **React 19** and **Tailwind
+This project is **Next.js 16** with **React 19** and **Tailwind
 CSS v4**. APIs, conventions, and file structure differ from older training data,
 and several things you may "remember" are deprecated or changed.
 
@@ -38,16 +38,28 @@ Two things that bite agents most:
 
 ```
 app/
-  layout.tsx              # root layout: fonts, metadata, NavBar + main + Footer, body overflow-x-hidden
+  layout.tsx              # root layout: fonts, metadata, NavBar + main + Footer + FeedbackFab, body overflow-x-hidden
   page.tsx                # landing page
   globals.css             # @theme tokens + CSS helpers (.bg-grid, .glow, .prose-fin, …)
   docs/
     layout.tsx            # docs shell: Sidebar + max-w-3xl article column
     page.tsx              # Introduction
     <slug>/page.tsx       # one folder per docs section
-components/               # NavBar, Sidebar, Footer, Terminal, CodeBlock, Prose, icons
+  feedback/               # public feedback form (page.tsx) + submitFeedback server action (actions.ts)
+  ap/                     # admin panel (dynamic, NeonDB-backed)
+    actions.ts            # login / logout / updateStatus server actions
+    login/page.tsx        # admin sign-in
+    (panel)/              # auth-gated shell: layout.tsx, overview, [type]/ list, [type]/[id]/ detail
+components/               # NavBar, Sidebar, Footer, Terminal, CodeBlock, PlugCatalog, Prose, icons,
+                          # FeedbackFab, FeedbackForm, LoginForm, AdminSidebar, StatusBadge
 lib/
   content.ts              # single source of truth: NAV, COMMAND_GROUPS, PROJECT_ENV, SYSTEM_ENV, LABELS, HIGHLIGHTS, INSTALL_ONE_LINER
+  feedback.ts             # feedback domain model: request types, per-type fields, statuses, validation
+  feedback-store.ts       # feedback queries (server-only)
+  db.ts                   # lazy NeonDB client (reads DATABASE_URL on first query)
+  auth.ts                 # admin sessions + password hashing, requireAdmin()
+scripts/db-setup.mjs      # `npm run db:setup` — creates tables, seeds admin
+tests/                    # vitest
 next.config.ts            # empty (defaults)
 postcss.config.mjs        # Tailwind v4 via @tailwindcss/postcss
 tsconfig.json             # strict; path alias @/* -> repo root
@@ -69,13 +81,15 @@ Don't use long relative paths (`../../components/...`) across directories.
 
 - **All content goes through `lib/content.ts`.** Command tables, env-var tables,
   the sidebar nav, and the landing highlights are data there. Pages render from
-  it — don't hard-code command/env data into a page.
+  it — don't hard-code command/env data into a page. (Feedback request types,
+  fields, and statuses are likewise data in `lib/feedback.ts`.)
 - **Server Components by default; `"use client"` only when required.** Add the
   `"use client"` directive _only_ if a component uses a browser hook or API:
   `usePathname`, `useState`/`useEffect`, event handlers, `navigator.*`. Today
-  only `NavBar`, `Sidebar`, and `CodeBlock` are client components. Everything
-  else (`Prose`, `Terminal`, `Footer`, `icons`) is a server component — keep it
-  that way unless you genuinely need interactivity.
+  the client components are `NavBar`, `Sidebar`, `CodeBlock`, `PlugCatalog`,
+  `FeedbackFab`, `FeedbackForm`, `LoginForm`, and `AdminSidebar`. Everything
+  else (`Prose`, `Terminal`, `Footer`, `icons`, `StatusBadge`) is a server
+  component — keep it that way unless you genuinely need interactivity.
 - **Style with theme-token utilities, not arbitrary hex — and not arbitrary
   `var()`.** Use the generated utilities: `bg-panel`, `bg-bg-soft`, `text-accent`,
   `text-fg-muted`, `border-border`, `text-term-green`, `rounded-card`, etc. Every
@@ -87,9 +101,20 @@ Don't use long relative paths (`../../components/...`) across directories.
   Turbopack **dev** scanner mis-parses these against Next's streaming HTML and
   produces broken CSS (a 500 in `next dev` that does _not_ surface in
   `next build`). Always use the token utility instead.
-- **Keep it static.** No server-only data fetching, no API routes, no databases.
-  Every route must prerender (`npm run build` should show `○ (Static)` for all
-  routes). Don't introduce runtime env-var dependencies or dynamic rendering.
+- **Docs stay static; only `/feedback` and `/ap/**` may be dynamic.** `/` and
+  every `/docs/**` route must always prerender (`npm run build` shows `○`/`●`
+  for them). Don't add server data fetching, runtime env-var dependencies, or
+  dynamic APIs (`cookies()`, `headers()`, `searchParams`, `connection()`) to the
+  landing page, docs pages, or any layout above them — the root layout in
+  particular must stay static. `/feedback` (form + server action) and `/ap/**`
+  (admin panel, reads NeonDB per request) are the only routes allowed to be
+  dynamic. No API routes.
+- **Database rules.** The NeonDB client in `lib/db.ts` is lazy — it must never
+  run at module load, or the static build breaks when `DATABASE_URL` is unset.
+  Only server actions and `/ap/**` query it. Every `/ap` page **and** every admin
+  server action calls `requireAdmin()` itself; a layout check is not a security
+  boundary. Use the Neon tagged-template client (parameterized) — never string
+  concatenation.
 - **Reuse the prose primitives.** Build docs pages from `PageHeader`, `H2`, `H3`,
   `P`, `Lead`, `Callout`, `RefTable`, `Code`, `Pager`, and `CodeBlock` rather
   than raw tags, so typography and spacing stay consistent.
@@ -141,13 +166,22 @@ CLI behavior.
 
 ```bash
 npm install
-npm run dev      # Turbopack dev server at http://localhost:3000
-npm run build    # static, prerendered production build
-npm run start    # serve the production build
+npm run dev        # Turbopack dev server at http://localhost:3000
+npm run build      # production build (docs prerendered, /ap dynamic)
+npm run start      # serve the production build
+npm run lint       # eslint
+npm run typecheck  # tsc --noEmit
+npm test           # vitest run (npm run test:watch to watch)
+npm run format     # prettier --write (format:check to verify)
+npm run db:setup   # create feedback/admin tables + seed admin from .env
 ```
 
-(There is no lint/test script configured; `dev`, `build`, `start` are the only
-scripts in `package.json`.)
+Feedback and the admin panel need a `.env` (git-ignored) with `DATABASE_URL`
+(NeonDB). `db:setup` also reads `ADMIN_USERNAME` / `ADMIN_PASSWORD` to seed the
+admin user. The docs themselves need no env to build.
+
+After changes, `npm run typecheck`, `npm run lint`, `npm test`, and
+`npm run build` should all pass.
 
 ## Gotchas
 
@@ -165,8 +199,13 @@ scripts in `package.json`.)
 - **Throwaway artifacts.** Anything under `.playwright-mcp/`, ad-hoc screenshots,
   and `.next/` is disposable build/inspection output — don't commit it or treat
   it as source.
-- **Don't add dependencies casually.** This site deliberately ships only
-  `next`/`react`/`react-dom`. Icons, prose, and code highlighting are all
-  in-repo; prefer extending those over pulling in a library.
+- **Don't add dependencies casually.** Runtime deps are `next`, `react`,
+  `react-dom`, and `@neondatabase/serverless` (feedback storage only). Icons,
+  prose, and code highlighting are all in-repo; prefer extending those over
+  pulling in a library.
+- **Build-time version lookup.** `lib/version.ts` fetches the latest Fin release
+  from GitHub during the build and falls back to a pinned version on failure
+  (you'll see a "GitHub release lookup failed" log when offline) — that is not a
+  build error.
 
 See **DESIGN.md** for the full architecture, token list, and component catalog.

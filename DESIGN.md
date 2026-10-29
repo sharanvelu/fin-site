@@ -15,8 +15,9 @@ built, why it is built that way, and the conventions that keep it consistent.
   output: a near-black background, a teal/cyan accent, monospace for anything
   command-shaped, and small "traffic light" dots on code/terminal chrome. Dark
   is the only theme — there is no light mode and no theme toggle.
-- **Zero heavy dependencies.** Runtime dependencies are exactly `next`, `react`,
-  and `react-dom` (see `package.json`). There is **no** UI kit, no icon library,
+- **Zero heavy dependencies.** Runtime dependencies are `next`, `react`,
+  `react-dom`, and `@neondatabase/serverless` (feedback storage only — see
+  `package.json`). There is **no** UI kit, no icon library,
   no markdown/MDX pipeline, and no syntax-highlighting library. Icons are inline
   SVG (`components/icons.tsx`), prose primitives are hand-written
   (`components/Prose.tsx`), and code highlighting is a ~40-line custom tokenizer
@@ -26,19 +27,24 @@ built, why it is built that way, and the conventions that keep it consistent.
   landing-page highlights all come from one module — `lib/content.ts`. Pages are
   thin renderers over that data, so keeping the site in sync with the CLI means
   editing one file.
-- **Static.** Every route prerenders. `npm run build` reports `○ (Static)` for
-  all routes. There is no server-side data fetching, no database, no API routes,
-  no runtime environment dependency.
+- **Docs are static; only `/feedback` and `/ap/**` may be dynamic.** `/` and
+  every `/docs/**` route always prerender (`○`/`●` in `npm run build`) with no
+  server-side data fetching and no runtime environment dependency. The feedback
+  form (`/feedback`, submits via a server action) and the admin panel (`/ap/**`,
+  reads NeonDB per request) are the only routes allowed to be dynamic. There are
+  no API routes. The DB client (`lib/db.ts`) is lazy — created on first query,
+  never at module load — so the static build needs no `DATABASE_URL`.
 
 ## Stack
 
-| Piece      | Choice                         | Notes                                                                                                                                                     |
-| ---------- | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Framework  | **Next.js 16.2.9**, App Router | Turbopack is the default bundler in Next 16 (dev and build).                                                                                              |
-| UI runtime | **React 19.2**                 | Server Components by default; `"use client"` only where needed.                                                                                           |
-| Styling    | **Tailwind CSS v4**            | CSS-first config via `@theme` in `app/globals.css`. There is **no `tailwind.config.js`**. Wired through `postcss.config.mjs` with `@tailwindcss/postcss`. |
-| Language   | **TypeScript** (strict)        | `tsconfig.json`, path alias `@/*` → repo root.                                                                                                            |
-| Fonts      | **Geist** + **Geist Mono**     | Loaded with `next/font/google` in `app/layout.tsx`, exposed as CSS vars `--font-geist-sans` / `--font-geist-mono`.                                        |
+| Piece      | Choice                     | Notes                                                                                                                                                     |
+| ---------- | -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Framework  | **Next.js 16**, App Router | Turbopack is the default bundler in Next 16 (dev and build).                                                                                              |
+| UI runtime | **React 19.2**             | Server Components by default; `"use client"` only where needed.                                                                                           |
+| Styling    | **Tailwind CSS v4**        | CSS-first config via `@theme` in `app/globals.css`. There is **no `tailwind.config.js`**. Wired through `postcss.config.mjs` with `@tailwindcss/postcss`. |
+| Language   | **TypeScript** (strict)    | `tsconfig.json`, path alias `@/*` → repo root.                                                                                                            |
+| Fonts      | **Geist** + **Geist Mono** | Loaded with `next/font/google` in `app/layout.tsx`, exposed as CSS vars `--font-geist-sans` / `--font-geist-mono`.                                        |
+| Database   | **NeonDB** (Postgres)      | `@neondatabase/serverless` tagged-template client in `lib/db.ts`. Used only by feedback and the admin panel.                                              |
 
 `next.config.ts` is intentionally empty — defaults only.
 
@@ -95,7 +101,7 @@ utilities):
 
 ## Layout architecture
 
-Two nested layouts:
+Three layouts — root, docs, and the admin panel shell:
 
 ### Root layout — `app/layout.tsx`
 
@@ -103,7 +109,9 @@ Two nested layouts:
   classes to `<html>`.
 - Owns site `metadata` (`metadataBase`, title template `"%s — Fin docs"`,
   description, keywords, OpenGraph).
-- Renders the persistent chrome: `<NavBar />`, `<main>`, `<Footer />`.
+- Renders the persistent chrome: `<NavBar />`, `<main>`, `<Footer />`, and the
+  floating `<FeedbackFab />` (client component, no DB access — keeps the root
+  layout static).
 - The `<body>` is a flex column (`flex min-h-full flex-col`) with
   **`overflow-x-hidden`** and the base `bg-bg text-fg` colors. The
   `overflow-x-hidden` is load-bearing — see _Responsiveness_ below.
@@ -119,6 +127,16 @@ Two nested layouts:
 - Below the `lg` breakpoint the grid collapses to a single column and the sidebar
   becomes a toggled drawer.
 
+### Admin layout — `app/ap/(panel)/layout.tsx`
+
+- Dynamic and auth-gated: calls `requireAdmin()` and renders `<AdminSidebar />`
+  (feedback types + counts, logout) beside the page. `/ap/login` sits outside the
+  `(panel)` group so it is not gated.
+- Routes: `/ap` (overview), `/ap/[type]` (list per request type),
+  `/ap/[type]/[id]` (detail + status update). Marked `noindex`.
+- A layout isn't a security boundary — every admin page **and** server action
+  re-calls `requireAdmin()`.
+
 ### Sidebar behavior (`components/Sidebar.tsx`)
 
 - Desktop (`lg+`): a sticky aside (`sticky top-24`) with its own scroll region
@@ -129,19 +147,25 @@ Two nested layouts:
 
 ## Component catalog
 
-| Component       | Type                        | Why                                                                                                                                                                                                           |
-| --------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `NavBar`        | **client** (`"use client"`) | Uses `usePathname()` to highlight the active top-level link.                                                                                                                                                  |
-| `Sidebar`       | **client**                  | `usePathname()` for active state + `useState` for the mobile drawer. Renders from `NAV`.                                                                                                                      |
-| `CodeBlock`     | **client**                  | Clipboard copy (`navigator.clipboard`) + `useState` for the copied flag. Also does the custom highlighting.                                                                                                   |
-| `Footer`        | **server**                  | Static links and text; no interactivity.                                                                                                                                                                      |
-| `Terminal`      | **server**                  | A static, pre-rendered `fin up` output mockup. The blinking cursor is pure CSS (`.cursor-blink`), so no JS is needed.                                                                                         |
-| `Prose` exports | **server**                  | `PageHeader`, `H2`, `H3`, `P`, `Lead`, `Callout`, `RefTable`, `Code`, `Pager` — presentational primitives with no state.                                                                                      |
-| `icons`         | **server**                  | Inline SVGs: `FinLogo` plus an `Icon` map (`bolt`, `plug`, `route`, `stack`, `shield`, `feather`, `copy`, `check`, `terminal`, `arrow`, `github`, `menu`, `close`, `link`). All `currentColor`, 1.6px stroke. |
+| Component       | Type                        | Why                                                                                                                                                                                                                                      |
+| --------------- | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `NavBar`        | **client** (`"use client"`) | Uses `usePathname()` to highlight the active top-level link.                                                                                                                                                                             |
+| `Sidebar`       | **client**                  | `usePathname()` for active state + `useState` for the mobile drawer. Renders from `NAV`.                                                                                                                                                 |
+| `CodeBlock`     | **client**                  | Clipboard copy (`navigator.clipboard`) + `useState` for the copied flag. Also does the custom highlighting.                                                                                                                              |
+| `PlugCatalog`   | **client**                  | Interactive plug catalog on the plugs docs page.                                                                                                                                                                                         |
+| `FeedbackFab`   | **client**                  | Floating button + popup (open state, request-type picker) rendered from the root layout.                                                                                                                                                 |
+| `FeedbackForm`  | **client**                  | Type-specific form (`useActionState` against `submitFeedback`), rendered from `lib/feedback.ts` field definitions.                                                                                                                       |
+| `LoginForm`     | **client**                  | Admin sign-in form (`useActionState` against `login`).                                                                                                                                                                                   |
+| `AdminSidebar`  | **client**                  | Active-state highlighting for admin nav + logout.                                                                                                                                                                                        |
+| `StatusBadge`   | **server**                  | Colored badge for a feedback workflow status.                                                                                                                                                                                            |
+| `Footer`        | **server**                  | Static links and text; no interactivity.                                                                                                                                                                                                 |
+| `Terminal`      | **server**                  | A static, pre-rendered `fin up` output mockup. The blinking cursor is pure CSS (`.cursor-blink`), so no JS is needed.                                                                                                                    |
+| `Prose` exports | **server**                  | `PageHeader`, `H2`, `H3`, `P`, `Lead`, `Callout`, `RefTable`, `Code`, `Pager` — presentational primitives with no state.                                                                                                                 |
+| `icons`         | **server**                  | Inline SVGs: `FinLogo` plus an `Icon` map (`bolt`, `plug`, `route`, `stack`, `shield`, `feather`, `copy`, `check`, `terminal`, `arrow`, `github`, `menu`, `close`, `link`, `chat`, `logout`, `inbox`). All `currentColor`, 1.6px stroke. |
 
 Rule of thumb: a component is a Server Component **unless** it needs a browser
 hook (`usePathname`, `useState`, `navigator`, event handlers) — then and only then
-does it get `"use client"`. Only three components cross that line.
+does it get `"use client"`. The client components are the ones in the table above.
 
 ### CodeBlock highlighting
 
@@ -232,5 +256,8 @@ When editing layout, preserve all three. Code blocks themselves scroll via
   from a fragile filesystem walk.
 - **Dark-only.** No theming abstraction; tokens are concrete hex values. Simpler,
   but a light mode would require reworking the `@theme` block.
-- **Fully static.** No personalization or live data, but instant loads, trivial
-  hosting, and no runtime surface area.
+- **Static docs, dynamic feedback/admin.** The docs have no personalization or
+  live data, so they load instantly and host trivially. Feedback and the admin
+  panel are isolated to `/feedback` and `/ap/**` so that runtime surface area
+  (a database, sessions, a login) never touches the docs routes. Hosting must
+  therefore be able to run server code, not just serve static files.

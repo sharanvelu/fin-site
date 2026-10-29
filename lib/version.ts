@@ -1,4 +1,4 @@
-export const FALLBACK_VERSION = "v0.1.7";
+export const FALLBACK_VERSION = "v0.1.8";
 
 /**
  * Fetches the latest Fin CLI release tag from GitHub at build time.

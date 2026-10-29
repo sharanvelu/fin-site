@@ -1,5 +1,14 @@
 import type { Metadata } from "next";
-import { PageHeader, H2, P, Code, Callout, Pager } from "@/components/Prose";
+import Link from "next/link";
+import {
+  PageHeader,
+  H2,
+  P,
+  Code,
+  Callout,
+  RefTable,
+  Pager,
+} from "@/components/Prose";
 import { CodeBlock } from "@/components/CodeBlock";
 import { COMMAND_GROUPS } from "@/lib/content";
 
@@ -63,6 +72,53 @@ export default function CommandsPage() {
           </div>
         </section>
       ))}
+
+      <H2 id="stop-vs-down">Stopping and removing</H2>
+      <P>
+        The same scopes apply to <Code>stop</Code>, <Code>down</Code>, and{" "}
+        <Code>asset</Code>: no scope is this project&apos;s containers,{" "}
+        <Code>asset</Code> is the shared assets, and <Code>all</Code> is every
+        Fin-managed container.
+      </P>
+      <RefTable
+        head={["Command", "Behavior"]}
+        rows={[
+          [
+            <Code key="stop">fin stop [asset|all]</Code>,
+            <>
+              Gracefully stops running containers and leaves them in place.{" "}
+              <Code>-f</Code> is ignored.
+            </>,
+          ],
+          [
+            <Code key="down">fin down [asset|all]</Code>,
+            "Gracefully stops running containers (waits up to ~10s for the process to exit), then removes every matching container.",
+          ],
+          [
+            <Code key="down-f">fin down [asset|all] -f</Code>,
+            "Force-removes immediately (kill), with no graceful shutdown.",
+          ],
+        ]}
+      />
+      <P>
+        <Code>fin asset down [-f]</Code> follows the same rules for the shared
+        asset containers.
+      </P>
+      <Callout kind="warn" title="down is graceful by default">
+        Plain <Code>fin down</Code> now waits for running containers to shut
+        down before removing them, so it can take longer than it used to. Add{" "}
+        <Code>-f/--force</Code> for the fast behavior: it skips the graceful
+        stop and force-removes immediately.
+      </Callout>
+      <P>
+        Containers are stopped or removed in parallel (up to 8 at a time) with a
+        live checklist titled <Code>Stopping containers</Code> or{" "}
+        <Code>Removing containers</Code>. A failure on one container never
+        aborts the others — see{" "}
+        <Link href="/docs/quickstart#teardown">Tear down</Link> for sample
+        output. The exit code is still <Code>0</Code> even when some containers
+        fail.
+      </P>
 
       <H2 id="help-version">Help &amp; version</H2>
       <CodeBlock

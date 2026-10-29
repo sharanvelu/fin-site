@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import {
   PageHeader,
   H2,
@@ -24,6 +25,38 @@ export default function HowItWorksPage() {
         title="How it works"
         lead="What fin up actually does — the proxy, shared assets, container labels, and how a command is resolved."
       />
+
+      <H2 id="up-flow">The fin up flow</H2>
+      <P>
+        <Code>fin up</Code> runs these steps in order:
+      </P>
+      <RefTable
+        head={["Step", "What happens"]}
+        rows={[
+          ["1", "Offer to install any missing plugs."],
+          ["2", "Validate the app plug's env spec."],
+          [
+            "3",
+            "Resolve every container spec: the proxy image, each enabled asset's images, and the primary app image.",
+          ],
+          [
+            "4",
+            "Prefetch images: pull all missing ones concurrently (max 4 at a time) before starting any container.",
+          ],
+          ["5", "Ensure the proxy is running."],
+          ["6", "Start the enabled assets."],
+          ["7", "Start the primary app container."],
+          ["8", "Auto-create the project database."],
+        ]}
+      />
+      <Callout kind="info" title="Image prefetch">
+        Images already present locally are never touched, and the live{" "}
+        <Code>Pulling images</Code> checklist prints nothing when every image is
+        present. If some pulls fail, the rest still run to completion and the
+        failures are reported together — see{" "}
+        <Link href="/docs/troubleshooting#image-pull">Image Pull Failed</Link>.
+        Docker&apos;s own pull at container start remains as a fallback.
+      </Callout>
 
       <H2 id="proxy">The proxy</H2>
       <P>

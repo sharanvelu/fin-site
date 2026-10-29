@@ -50,6 +50,15 @@ REDIS_HOST=fin_redis`}
         <Code>myapp</Code> database if it&apos;s missing, and prints:
       </P>
       <CodeBlock code={`✓ myapp is up at http://myapp.localhost`} />
+      <P>
+        Before starting any container, <Code>fin up</Code> pulls every missing
+        image — the proxy, each enabled asset, and your app — concurrently (up
+        to 4 at a time), so a first run waits roughly as long as the slowest
+        single download, not the sum. A live <Code>Pulling images</Code>{" "}
+        checklist shows one line per image, then <Code>Pulled N image(s).</Code>{" "}
+        Images you already have are never touched, and nothing is printed if all
+        of them are present.
+      </P>
 
       <Callout kind="tip" title="No plugs installed yet? fin up handles it">
         On a fresh install, <Code>fin up</Code> notices that the{" "}
@@ -87,6 +96,29 @@ fin bash`}
 fin down asset    # shared asset containers
 fin down all      # everything Fin manages`}
       />
+
+      <P>
+        <Code>down</Code> stops running containers gracefully (waiting up to
+        ~10s for each process to exit) and then removes them. Add{" "}
+        <Code>-f</Code> to force-remove immediately, or use{" "}
+        <Code>fin stop</Code> to stop containers and leave them in place.
+        Containers are handled in parallel, with a live checklist:
+      </P>
+      <CodeBlock
+        code={`Stopping containers
+✓ Stopped myapp-web
+✓ Stopped fin_mysql
+✓ Stopped fin_redis
+Removing containers
+✓ Removed myapp-web
+✗ fin_mysql — <error message>
+✓ Removed fin_redis
+⚠ Could not remove 1 of 3 containers. Retry with -f to force-remove.`}
+      />
+      <P>
+        One container failing never aborts the others, and the exit code stays{" "}
+        <Code>0</Code>.
+      </P>
 
       <Callout kind="warn" title="down all is global">
         <Code>fin down all</Code> removes <em>every</em> Fin-managed container

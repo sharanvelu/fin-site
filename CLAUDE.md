@@ -6,7 +6,8 @@ admin panel (`/ap`) are the only dynamic, NeonDB-backed parts. It is dark-first
 and terminal-inspired, with a teal/cyan accent that mirrors Fin's Rich CLI. Docs
 pages render from data in `lib/content.ts`; there are no external UI, icon,
 content, or syntax-highlighting libraries — everything is in-repo (the only
-runtime library beyond Next/React is `@neondatabase/serverless`, for feedback).
+runtime libraries beyond Next/React are `@neondatabase/serverless` for feedback
+storage and `openid-client` for admin login).
 
 ## Most important conventions
 
@@ -21,16 +22,20 @@ runtime library beyond Next/React is `@neondatabase/serverless`, for feedback).
   the `@theme` block.
 - **Server Components by default;** add `"use client"` only for browser
   hooks/APIs (client today: `NavBar`, `Sidebar`, `CodeBlock`, `PlugCatalog`,
-  `FeedbackFab`, `FeedbackForm`, `LoginForm`, `AdminSidebar`).
+  `FeedbackFab`, `FeedbackForm`, `AdminSidebar`).
 - **Docs stay static; only `/feedback` and `/ap/**` may be dynamic.** `/` and
   every `/docs/**` route must always prerender (`○`/`●` in `npm run build`) — no
   server data fetching, no runtime env/DB dependency. `/feedback` (public form,
   submits via a server action) and `/ap/**` (admin panel, reads NeonDB per
-  request) are the only routes allowed to be dynamic. No API routes.
+  request) are the only routes allowed to be dynamic. No API routes, except the two
+  OIDC route handlers under `app/ap/auth/*` (login start + callback). `proxy.ts`
+  exists only for the `/ap/**` IP allowlist — its matcher must stay `/ap/:path*`.
 - **DB access is lazy and server-only.** `lib/db.ts` builds the Neon client on
   first query, never at module load, so the static build works without
   `DATABASE_URL`. Only server actions and `/ap/**` may query it. Every admin page
-  **and** admin server action must call `requireAdmin()` (`lib/auth.ts`).
+  **and** admin server action must call `requireUser()`, `requireEditor()` or
+  `requireAdmin()` itself (`lib/auth.ts`). OIDC env is read lazily per request,
+  never at module load.
 - **`@/` path alias** → repo root (e.g. `@/components/Prose`, `@/lib/content`).
 - Adding a docs page = `app/docs/<slug>/page.tsx` (export `metadata` +
   component) **and** add it to `NAV` in `lib/content.ts`.
@@ -44,12 +49,14 @@ npm run start      # serve the production build
 npm run lint       # eslint
 npm run typecheck  # tsc --noEmit
 npm test           # vitest
-npm run db:setup   # create feedback/admin tables + seed admin (needs .env)
+npm run db:setup   # create feedback/users/session tables (needs .env)
 ```
 
-Feedback/admin needs `.env` with `DATABASE_URL` (NeonDB), and `ADMIN_USERNAME` /
-`ADMIN_PASSWORD` for `db:setup`. `.env*` is git-ignored. Running `db:setup`
-changes database state — don't run it without the user's go-ahead.
+Feedback/admin needs a git-ignored `.env` — copy `.env.example`: `DATABASE_URL`
+(NeonDB), `APP_URL`, `OIDC_ISSUER` / `OIDC_CLIENT_ID` / `OIDC_CLIENT_SECRET`, and
+optionally `OIDC_PROVIDER_NAME` (login button label), `OIDC_SCOPES`,
+`OIDC_JIT_PROVISIONING`, and `ADMIN_IP_ALLOWLIST`. Running `db:setup` changes
+database state — don't run it without the user's go-ahead.
 
 ## More detail
 

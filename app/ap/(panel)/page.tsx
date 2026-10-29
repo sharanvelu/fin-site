@@ -1,10 +1,26 @@
 import Link from "next/link";
-import { requireAdmin } from "@/lib/auth";
+import { requireUser } from "@/lib/auth";
 import { REQUEST_TYPE_DEFS } from "@/lib/feedback";
 import { feedbackCounts } from "@/lib/feedback-store";
+import { canTriage, displayName } from "@/lib/roles";
 
 export default async function AdminOverviewPage() {
-  await requireAdmin();
+  const user = await requireUser();
+  if (!canTriage(user.role)) {
+    return (
+      <div className="rounded-card border border-border bg-panel p-8">
+        <h1 className="text-2xl font-bold tracking-tight text-fg">
+          Awaiting approval
+        </h1>
+        <p className="mt-2 text-sm leading-relaxed text-fg-muted">
+          You&apos;re signed in as{" "}
+          <span className="font-mono text-fg">{displayName(user)}</span>, but
+          your account has not been granted access yet. An administrator needs
+          to assign you a role.
+        </p>
+      </div>
+    );
+  }
   const counts = await feedbackCounts();
 
   return (

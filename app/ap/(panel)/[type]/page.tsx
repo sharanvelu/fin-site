@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { StatusBadge } from "@/components/StatusBadge";
-import { requireAdmin } from "@/lib/auth";
+import { requireEditor } from "@/lib/auth";
 import {
   formatTimestamp,
   getRequestTypeDef,
@@ -16,7 +16,7 @@ export default async function AdminListPage({
 }) {
   const { type } = await params;
   if (!isRequestType(type)) notFound();
-  await requireAdmin();
+  await requireEditor();
 
   const def = getRequestTypeDef(type);
   const rows = await listFeedback(type);

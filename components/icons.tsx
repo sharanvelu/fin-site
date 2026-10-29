@@ -106,4 +106,22 @@ export const Icon: Record<string, (p: IconProps) => React.ReactElement> = {
       <path d="M14 11a5 5 0 0 0-7 0l-2 2a5 5 0 0 0 7 7l1-1" />
     </svg>
   ),
+  chat: (p) => (
+    <svg {...base} {...p}>
+      <path d="M21 11.5a7.5 7.5 0 0 1-7.5 7.5H8l-4 3.5v-11A7.5 7.5 0 0 1 11.5 4h2A7.5 7.5 0 0 1 21 11.5Z" />
+      <path d="M8.5 11.5h.01M12.5 11.5h.01M16.5 11.5h.01" />
+    </svg>
+  ),
+  logout: (p) => (
+    <svg {...base} {...p}>
+      <path d="M9 21H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3" />
+      <path d="m16 17 5-5-5-5M21 12H9" />
+    </svg>
+  ),
+  inbox: (p) => (
+    <svg {...base} {...p}>
+      <path d="M22 12h-6l-2 3h-4l-2-3H2" />
+      <path d="M5 4h14l3 8v7a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-7l3-8Z" />
+    </svg>
+  ),
 };

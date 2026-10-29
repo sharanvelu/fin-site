@@ -4,6 +4,7 @@ import "./globals.css";
 import { NavBar } from "@/components/NavBar";
 import { getFinVersion } from "@/lib/version";
 import { Footer } from "@/components/Footer";
+import { FeedbackFab } from "@/components/FeedbackFab";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -56,6 +57,7 @@ export default async function RootLayout({
         <NavBar version={version} />
         <main className="flex-1">{children}</main>
         <Footer />
+        <FeedbackFab />
       </body>
     </html>
   );

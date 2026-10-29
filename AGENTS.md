@@ -6,7 +6,7 @@ how they are _rendered_ here — the CLI lives in the parent repo.
 
 ## ⚠️ This is NOT the Next.js you know
 
-This project is **Next.js 16** (`16.2.x`) with **React 19** and **Tailwind
+This project is **Next.js 16** with **React 19** and **Tailwind
 CSS v4**. APIs, conventions, and file structure differ from older training data,
 and several things you may "remember" are deprecated or changed.
 

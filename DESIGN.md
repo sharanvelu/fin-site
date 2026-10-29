@@ -37,14 +37,14 @@ built, why it is built that way, and the conventions that keep it consistent.
 
 ## Stack
 
-| Piece      | Choice                         | Notes                                                                                                                                                     |
-| ---------- | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Framework  | **Next.js 16.2.x**, App Router | Turbopack is the default bundler in Next 16 (dev and build).                                                                                              |
-| UI runtime | **React 19.2**                 | Server Components by default; `"use client"` only where needed.                                                                                           |
-| Styling    | **Tailwind CSS v4**            | CSS-first config via `@theme` in `app/globals.css`. There is **no `tailwind.config.js`**. Wired through `postcss.config.mjs` with `@tailwindcss/postcss`. |
-| Language   | **TypeScript** (strict)        | `tsconfig.json`, path alias `@/*` → repo root.                                                                                                            |
-| Fonts      | **Geist** + **Geist Mono**     | Loaded with `next/font/google` in `app/layout.tsx`, exposed as CSS vars `--font-geist-sans` / `--font-geist-mono`.                                        |
-| Database   | **NeonDB** (Postgres)          | `@neondatabase/serverless` tagged-template client in `lib/db.ts`. Used only by feedback and the admin panel.                                              |
+| Piece      | Choice                     | Notes                                                                                                                                                     |
+| ---------- | -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Framework  | **Next.js 16**, App Router | Turbopack is the default bundler in Next 16 (dev and build).                                                                                              |
+| UI runtime | **React 19.2**             | Server Components by default; `"use client"` only where needed.                                                                                           |
+| Styling    | **Tailwind CSS v4**        | CSS-first config via `@theme` in `app/globals.css`. There is **no `tailwind.config.js`**. Wired through `postcss.config.mjs` with `@tailwindcss/postcss`. |
+| Language   | **TypeScript** (strict)    | `tsconfig.json`, path alias `@/*` → repo root.                                                                                                            |
+| Fonts      | **Geist** + **Geist Mono** | Loaded with `next/font/google` in `app/layout.tsx`, exposed as CSS vars `--font-geist-sans` / `--font-geist-mono`.                                        |
+| Database   | **NeonDB** (Postgres)      | `@neondatabase/serverless` tagged-template client in `lib/db.ts`. Used only by feedback and the admin panel.                                              |
 
 `next.config.ts` is intentionally empty — defaults only.
 

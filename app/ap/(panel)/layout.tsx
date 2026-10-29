@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { AdminSidebar } from "@/components/AdminSidebar";
-import { requireAdmin } from "@/lib/auth";
+import { requireUser } from "@/lib/auth";
+import { displayName } from "@/lib/roles";
 
 export const metadata: Metadata = {
   title: "Admin panel",
@@ -17,13 +18,13 @@ export default async function AdminPanelLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const admin = await requireAdmin();
+  const user = await requireUser();
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-10 sm:px-6 lg:flex-row">
       <aside className="shrink-0 lg:w-56">
         <div className="lg:sticky lg:top-24">
-          <AdminSidebar username={admin.username} />
+          <AdminSidebar user={{ label: displayName(user), role: user.role }} />
         </div>
       </aside>
       <div className="min-w-0 flex-1">{children}</div>

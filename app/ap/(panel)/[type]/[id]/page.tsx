@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { updateStatus } from "@/app/ap/actions";
 import { StatusBadge } from "@/components/StatusBadge";
-import { requireAdmin } from "@/lib/auth";
+import { requireEditor } from "@/lib/auth";
 import {
   STATUSES,
   STATUS_META,
@@ -22,7 +22,7 @@ export default async function AdminDetailPage({
   if (!isRequestType(type) || !Number.isInteger(numericId) || numericId <= 0) {
     notFound();
   }
-  await requireAdmin();
+  await requireEditor();
 
   const row = await getFeedback(numericId);
   if (!row || row.type !== type) notFound();

@@ -16,7 +16,8 @@ built, why it is built that way, and the conventions that keep it consistent.
   command-shaped, and small "traffic light" dots on code/terminal chrome. Dark
   is the only theme — there is no light mode and no theme toggle.
 - **Zero heavy dependencies.** Runtime dependencies are `next`, `react`,
-  `react-dom`, and `@neondatabase/serverless` (feedback storage only — see
+  `react-dom`, `@neondatabase/serverless` (feedback storage), and `openid-client`
+  (admin login — see
   `package.json`). There is **no** UI kit, no icon library,
   no markdown/MDX pipeline, and no syntax-highlighting library. Icons are inline
   SVG (`components/icons.tsx`), prose primitives are hand-written
@@ -32,19 +33,20 @@ built, why it is built that way, and the conventions that keep it consistent.
   server-side data fetching and no runtime environment dependency. The feedback
   form (`/feedback`, submits via a server action) and the admin panel (`/ap/**`,
   reads NeonDB per request) are the only routes allowed to be dynamic. There are
-  no API routes. The DB client (`lib/db.ts`) is lazy — created on first query,
+  no API routes except the two OIDC route handlers under `app/ap/auth/*`. The DB client (`lib/db.ts`) is lazy — created on first query,
   never at module load — so the static build needs no `DATABASE_URL`.
 
 ## Stack
 
-| Piece      | Choice                     | Notes                                                                                                                                                     |
-| ---------- | -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Framework  | **Next.js 16**, App Router | Turbopack is the default bundler in Next 16 (dev and build).                                                                                              |
-| UI runtime | **React 19.2**             | Server Components by default; `"use client"` only where needed.                                                                                           |
-| Styling    | **Tailwind CSS v4**        | CSS-first config via `@theme` in `app/globals.css`. There is **no `tailwind.config.js`**. Wired through `postcss.config.mjs` with `@tailwindcss/postcss`. |
-| Language   | **TypeScript** (strict)    | `tsconfig.json`, path alias `@/*` → repo root.                                                                                                            |
-| Fonts      | **Geist** + **Geist Mono** | Loaded with `next/font/google` in `app/layout.tsx`, exposed as CSS vars `--font-geist-sans` / `--font-geist-mono`.                                        |
-| Database   | **NeonDB** (Postgres)      | `@neondatabase/serverless` tagged-template client in `lib/db.ts`. Used only by feedback and the admin panel.                                              |
+| Piece      | Choice                       | Notes                                                                                                                                                     |
+| ---------- | ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Framework  | **Next.js 16**, App Router   | Turbopack is the default bundler in Next 16 (dev and build).                                                                                              |
+| UI runtime | **React 19.2**               | Server Components by default; `"use client"` only where needed.                                                                                           |
+| Styling    | **Tailwind CSS v4**          | CSS-first config via `@theme` in `app/globals.css`. There is **no `tailwind.config.js`**. Wired through `postcss.config.mjs` with `@tailwindcss/postcss`. |
+| Language   | **TypeScript** (strict)      | `tsconfig.json`, path alias `@/*` → repo root.                                                                                                            |
+| Fonts      | **Geist** + **Geist Mono**   | Loaded with `next/font/google` in `app/layout.tsx`, exposed as CSS vars `--font-geist-sans` / `--font-geist-mono`.                                        |
+| Auth       | **OIDC** via `openid-client` | Authorization Code + PKCE against a configurable identity provider; DB-backed sessions; roles `admin` / `editor` / `member`. Admin panel only.            |
+| Database   | **NeonDB** (Postgres)        | `@neondatabase/serverless` tagged-template client in `lib/db.ts`. Used only by feedback and the admin panel.                                              |
 
 `next.config.ts` is intentionally empty — defaults only.
 
@@ -129,13 +131,18 @@ Three layouts — root, docs, and the admin panel shell:
 
 ### Admin layout — `app/ap/(panel)/layout.tsx`
 
-- Dynamic and auth-gated: calls `requireAdmin()` and renders `<AdminSidebar />`
-  (feedback types + counts, logout) beside the page. `/ap/login` sits outside the
-  `(panel)` group so it is not gated.
-- Routes: `/ap` (overview), `/ap/[type]` (list per request type),
-  `/ap/[type]/[id]` (detail + status update). Marked `noindex`.
-- A layout isn't a security boundary — every admin page **and** server action
-  re-calls `requireAdmin()`.
+- Dynamic and auth-gated: calls `requireUser()` and renders `<AdminSidebar />`
+  beside the page; the sidebar shows only what the user's role allows.
+  `/ap/login` and the OIDC handlers (`/ap/auth/login`, `/ap/auth/callback`) sit
+  outside the `(panel)` group so they are not gated.
+- Routes: `/ap` (overview, or an "awaiting approval" card for members),
+  `/ap/[type]` (list per request type), `/ap/[type]/[id]` (detail + status
+  update, editors and admins), `/ap/users` (user management, admins only).
+  Marked `noindex`.
+- `proxy.ts` optionally restricts all of `/ap/**` to `ADMIN_IP_ALLOWLIST`.
+- A layout (or proxy) isn't a security boundary — every admin page **and** server
+  action re-calls `requireUser()` / `requireEditor()` / `requireAdmin()`, which
+  also re-check the IP allowlist.
 
 ### Sidebar behavior (`components/Sidebar.tsx`)
 
@@ -155,8 +162,9 @@ Three layouts — root, docs, and the admin panel shell:
 | `PlugCatalog`   | **client**                  | Interactive plug catalog on the plugs docs page.                                                                                                                                                                                         |
 | `FeedbackFab`   | **client**                  | Floating button + popup (open state, request-type picker) rendered from the root layout.                                                                                                                                                 |
 | `FeedbackForm`  | **client**                  | Type-specific form (`useActionState` against `submitFeedback`), rendered from `lib/feedback.ts` field definitions.                                                                                                                       |
-| `LoginForm`     | **client**                  | Admin sign-in form (`useActionState` against `login`).                                                                                                                                                                                   |
-| `AdminSidebar`  | **client**                  | Active-state highlighting for admin nav + logout.                                                                                                                                                                                        |
+| `LoginButton`   | **server**                  | "Login with <provider>" link into the OIDC route handler; label from `OIDC_PROVIDER_NAME`.                                                                                                                                               |
+| `AdminSidebar`  | **client**                  | Role-aware nav, active-state highlighting, and logout.                                                                                                                                                                                   |
+| `RoleBadge`     | **server**                  | Colored badge for a user role.                                                                                                                                                                                                           |
 | `StatusBadge`   | **server**                  | Colored badge for a feedback workflow status.                                                                                                                                                                                            |
 | `Footer`        | **server**                  | Static links and text; no interactivity.                                                                                                                                                                                                 |
 | `Terminal`      | **server**                  | A static, pre-rendered `fin up` output mockup. The blinking cursor is pure CSS (`.cursor-blink`), so no JS is needed.                                                                                                                    |
@@ -259,5 +267,5 @@ When editing layout, preserve all three. Code blocks themselves scroll via
 - **Static docs, dynamic feedback/admin.** The docs have no personalization or
   live data, so they load instantly and host trivially. Feedback and the admin
   panel are isolated to `/feedback` and `/ap/**` so that runtime surface area
-  (a database, sessions, a login) never touches the docs routes. Hosting must
+  (a database, sessions, an OIDC login) never touches the docs routes. Hosting must
   therefore be able to run server code, not just serve static files.

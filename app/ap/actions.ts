@@ -2,44 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import {
-  authenticate,
-  createSession,
-  destroySession,
-  requireAdmin,
-} from "@/lib/auth";
+import { destroySession, requireAdmin, requireEditor } from "@/lib/auth";
 import { isRequestType, isStatus } from "@/lib/feedback";
 import { updateFeedbackStatus } from "@/lib/feedback-store";
-
-export type LoginState = { error?: string };
-
-export async function login(
-  _prev: LoginState,
-  formData: FormData,
-): Promise<LoginState> {
-  const username = String(formData.get("username") ?? "").trim();
-  const password = String(formData.get("password") ?? "");
-  if (!username || !password) {
-    return { error: "Enter a username and password." };
-  }
-
-  let adminId: number | null = null;
-  try {
-    const admin = await authenticate(username, password);
-    if (admin) {
-      await createSession(admin.id);
-      adminId = admin.id;
-    }
-  } catch (error) {
-    console.error("Login failed:", error);
-    return { error: "Could not reach the database. Try again." };
-  }
-
-  if (adminId === null) {
-    return { error: "Invalid username or password." };
-  }
-  redirect("/ap");
-}
+import { canChangeUser, isRole } from "@/lib/roles";
+import { deleteUser, setUserDisabled, updateUserRole } from "@/lib/users-store";
 
 export async function logout(): Promise<void> {
   await destroySession();
@@ -47,7 +14,7 @@ export async function logout(): Promise<void> {
 }
 
 export async function updateStatus(formData: FormData): Promise<void> {
-  await requireAdmin();
+  await requireEditor();
 
   const id = Number(formData.get("id"));
   const type = String(formData.get("type") ?? "");
@@ -63,4 +30,38 @@ export async function updateStatus(formData: FormData): Promise<void> {
 
   await updateFeedbackStatus(id, status);
   revalidatePath("/ap", "layout");
+}
+
+/** Shared by the user-management actions: admin gate, id check, self-guard. */
+async function userTarget(formData: FormData): Promise<number> {
+  const actor = await requireAdmin();
+  const id = Number(formData.get("id"));
+  if (!Number.isInteger(id) || id <= 0) {
+    throw new Error("Invalid user.");
+  }
+  if (!canChangeUser(actor.id, id)) {
+    throw new Error("You cannot change your own account.");
+  }
+  return id;
+}
+
+export async function setUserRole(formData: FormData): Promise<void> {
+  const id = await userTarget(formData);
+  const role = String(formData.get("role") ?? "");
+  if (!isRole(role)) throw new Error("Invalid role.");
+  await updateUserRole(id, role);
+  revalidatePath("/ap/users");
+}
+
+export async function toggleUserDisabled(formData: FormData): Promise<void> {
+  const id = await userTarget(formData);
+  const disabled = String(formData.get("disabled") ?? "") === "true";
+  await setUserDisabled(id, disabled);
+  revalidatePath("/ap/users");
+}
+
+export async function removeUser(formData: FormData): Promise<void> {
+  const id = await userTarget(formData);
+  await deleteUser(id);
+  revalidatePath("/ap/users");
 }

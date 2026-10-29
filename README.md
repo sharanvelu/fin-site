@@ -31,21 +31,38 @@ Other scripts: `npm run lint`, `npm run typecheck`, `npm test`.
 ## Feedback & admin panel
 
 The public form (`/feedback`, also reachable from the floating button on every
-page) stores submissions in NeonDB. `/ap` is a login-protected admin panel for
-triaging them. Copy the variables below into a git-ignored `.env`:
+page) stores submissions in NeonDB. `/ap` is an admin panel for triaging them,
+protected by OIDC login. Copy `.env.example` to a git-ignored `.env` and fill it
+in:
 
 ```bash
-DATABASE_URL=postgres://…     # NeonDB connection string
-ADMIN_USERNAME=…              # seeded by db:setup
-ADMIN_PASSWORD=…
+DATABASE_URL=postgres://…         # NeonDB connection string
+APP_URL=https://docs.example.com  # public origin of this site
+OIDC_ISSUER=https://idp.example.com/realms/fin
+OIDC_CLIENT_ID=…
+OIDC_CLIENT_SECRET=…
+OIDC_PROVIDER_NAME=Example SSO    # button reads "Login with Example SSO"
+OIDC_JIT_PROVISIONING=false       # true = auto-create unknown users as members
+ADMIN_IP_ALLOWLIST=               # optional: IPs/CIDRs allowed to reach /ap
 ```
+
+Register a confidential client at your identity provider (Authorization Code with
+PKCE) with the redirect URI `${APP_URL}/ap/auth/callback`.
 
 ```bash
-npm run db:setup   # creates tables (idempotent) and seeds/updates the admin
+npm run db:setup   # creates the feedback, users, and session tables (idempotent)
 ```
 
-Building the docs does **not** need any of this — the database client is lazy
-and only `/feedback` submissions and `/ap/**` touch it.
+Roles are `admin` (everything, incl. user management at `/ap/users`), `editor`
+(view and triage feedback), and `member` (signed in, no access until promoted).
+Sign in once, then promote the first admin in the database:
+
+```sql
+UPDATE users SET role = 'admin' WHERE email = 'you@example.com';
+```
+
+Building the docs does **not** need any of this — the database client and OIDC
+config are read lazily, and only `/feedback` submissions and `/ap/**` use them.
 
 ## Structure
 
@@ -65,7 +82,7 @@ app/
     writing-a-plug/…
     troubleshooting/…
   feedback/             # public feedback form + submit server action
-  ap/                   # admin panel (login + auth-gated list/detail views)
+  ap/                   # admin panel (OIDC login, users, feedback list/detail)
 components/
   NavBar, Footer, Sidebar      # site chrome
   Terminal                     # static `fin up` terminal mockup
@@ -73,12 +90,14 @@ components/
   Prose                        # PageHeader, H2/H3, Callout, RefTable, Pager…
   icons                        # inline SVG icons
   FeedbackFab, FeedbackForm    # feedback button + form
-  AdminSidebar, LoginForm, StatusBadge   # admin panel UI
+  AdminSidebar, LoginButton, StatusBadge, RoleBadge   # admin panel UI
 lib/
   content.ts            # single source of truth for commands / env vars / nav
   feedback.ts           # feedback request types, fields, statuses, validation
-  feedback-store.ts, db.ts, auth.ts      # NeonDB access + admin sessions
+  feedback-store.ts, users-store.ts, db.ts   # NeonDB access
+  auth.ts, oidc.ts, oidc-config.ts, roles.ts, ip-allowlist.ts   # admin auth
 scripts/db-setup.mjs    # one-time DB setup
+proxy.ts                # optional /ap IP allowlist
 ```
 
 ## Editing content

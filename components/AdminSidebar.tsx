@@ -5,27 +5,42 @@ import { usePathname } from "next/navigation";
 import { logout } from "@/app/ap/actions";
 import { REQUEST_TYPE_DEFS } from "@/lib/feedback";
 import { Icon } from "@/components/icons";
+import { ROLE_META, canManageUsers, canTriage, type Role } from "@/lib/roles";
 
-const GROUPS = [
-  {
-    title: "Overview",
-    items: [{ title: "Dashboard", href: "/ap" }],
-  },
-  {
-    title: "Feedback",
-    items: REQUEST_TYPE_DEFS.map((def) => ({
-      title: def.label,
-      href: `/ap/${def.slug}`,
-    })),
-  },
-];
+type Group = { title: string; items: { title: string; href: string }[] };
 
-export function AdminSidebar({ username }: { username: string }) {
+function groupsFor(role: Role): Group[] {
+  const groups: Group[] = [
+    { title: "Overview", items: [{ title: "Dashboard", href: "/ap" }] },
+  ];
+  if (canTriage(role)) {
+    groups.push({
+      title: "Feedback",
+      items: REQUEST_TYPE_DEFS.map((def) => ({
+        title: def.label,
+        href: `/ap/${def.slug}`,
+      })),
+    });
+  }
+  if (canManageUsers(role)) {
+    groups.push({
+      title: "Admin",
+      items: [{ title: "Users", href: "/ap/users" }],
+    });
+  }
+  return groups;
+}
+
+export function AdminSidebar({
+  user,
+}: {
+  user: { label: string; role: Role };
+}) {
   const pathname = usePathname();
 
   return (
     <nav className="space-y-7">
-      {GROUPS.map((group) => (
+      {groupsFor(user.role).map((group) => (
         <div key={group.title}>
           <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-fg-faint">
             {group.title}
@@ -58,7 +73,8 @@ export function AdminSidebar({ username }: { username: string }) {
       <div className="border-t border-border-soft pt-4">
         <p className="mb-2 px-3 text-xs text-fg-faint">
           Signed in as{" "}
-          <span className="font-mono text-fg-muted">{username}</span>
+          <span className="font-mono text-fg-muted">{user.label}</span>
+          <span className="ml-1.5">({ROLE_META[user.role].label})</span>
         </p>
         <form action={logout}>
           <button

@@ -266,6 +266,21 @@ export type ValidationResult =
   | { ok: true; submission: Submission }
   | { ok: false; errors: Record<string, string> };
 
+const SAFE_EMAIL =
+  /^[A-Za-z0-9._+-]{1,64}@[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)+$/;
+
+/**
+ * Returns the email only if it is a plain, conservative address; otherwise
+ * null. The admin panel renders it as a `mailto:` link, so anything with
+ * URL/header syntax (`?`, `&`, `%`, `#`, quotes, spaces, …) must never be
+ * stored. The submission itself is not rejected — the address is just dropped.
+ */
+export function sanitizeEmail(value: string | undefined): string | null {
+  const email = (value ?? "").trim();
+  if (!email || email.length > 254) return null;
+  return SAFE_EMAIL.test(email) ? email : null;
+}
+
 /**
  * Server-side validation shared by the submit action. Accepts a plain
  * record (built from FormData) and returns either a clean Submission or
@@ -291,9 +306,8 @@ export function validateSubmission(
   if (name.length > MAX_SHORT)
     errors.name = `Keep the name under ${MAX_SHORT} characters.`;
 
-  const email = (raw.email ?? "").trim();
-  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
-    errors.email = "Enter a valid email address (or leave it empty).";
+  // Never reject on email — just don't store anything unsafe (see sanitizeEmail).
+  const email = sanitizeEmail(raw.email);
 
   const details: Record<string, string> = {};
   for (const field of def.fields) {
@@ -329,7 +343,7 @@ export function validateSubmission(
       type,
       title,
       name: name || null,
-      email: email || null,
+      email,
       details,
     },
   };

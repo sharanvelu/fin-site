@@ -1,44 +1,57 @@
 /**
- * Admin auth for /ap/* — session-based, backed by the admins and
- * admin_sessions tables in NeonDB.
+ * Admin auth for /ap/* — OIDC login, then a session backed by the users and
+ * admin_sessions tables in NeonDB. See lib/oidc.ts for the login flow.
  *
  * Server-only: import this from server components, server actions, and
  * route handlers only. Every admin page AND every admin server action must
- * call requireAdmin() — actions are reachable by direct POST, so a check in
- * the layout alone is not a security boundary.
+ * call requireUser() / requireEditor() / requireAdmin() — actions are
+ * reachable by direct POST, so a check in the layout alone is not a security
+ * boundary. The same goes for the IP allowlist: proxy.ts enforces it for
+ * requests under /ap, and the gates below re-check it for actions.
  */
-import {
-  createHash,
-  randomBytes,
-  scryptSync,
-  timingSafeEqual,
-} from "node:crypto";
-import { cookies } from "next/headers";
+import { createHash, randomBytes } from "node:crypto";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 import { db } from "./db";
+import {
+  clientIpFromHeaders,
+  isIpAllowed,
+  parseAllowlist,
+} from "./ip-allowlist";
+import { DEFAULT_ROLE, canManageUsers, canTriage, type Role } from "./roles";
+import {
+  findUserByIdentity,
+  insertUser,
+  touchUserLogin,
+  type Identity,
+  type UserRow,
+} from "./users-store";
 
-const SESSION_COOKIE = "fin_admin_session";
+export const SESSION_COOKIE = "fin_admin_session";
 const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
-export type Admin = { id: number; username: string };
+export type SessionUser = {
+  id: number;
+  email: string | null;
+  name: string | null;
+  role: Role;
+};
 
-/* ---------- password hashing (format shared with scripts/db-setup.mjs) --- */
+/* ---------- IP allowlist ------------------------------------------------- */
 
-export function hashPassword(password: string): string {
-  const salt = randomBytes(16).toString("hex");
-  const hash = scryptSync(password, salt, 64).toString("hex");
-  return `${salt}:${hash}`;
-}
-
-export function verifyPassword(password: string, stored: string): boolean {
-  const [salt, expected] = stored.split(":");
-  if (!salt || !expected) return false;
-  const actual = scryptSync(password, salt, 64);
-  const expectedBuf = Buffer.from(expected, "hex");
-  return (
-    actual.length === expectedBuf.length && timingSafeEqual(actual, expectedBuf)
-  );
+/**
+ * Re-checks ADMIN_IP_ALLOWLIST for the current request (defense in depth —
+ * a server action can be POSTed to any route, bypassing proxy.ts's matcher).
+ * An invalid allowlist throws, so this fails closed.
+ */
+export async function assertAllowedIp(): Promise<void> {
+  const rules = parseAllowlist(process.env.ADMIN_IP_ALLOWLIST);
+  if (rules.length === 0) return;
+  const ip = clientIpFromHeaders(await headers());
+  if (!ip || !isIpAllowed(ip, rules)) {
+    throw new Error("Request origin not allowed.");
+  }
 }
 
 /* ---------- sessions ----------------------------------------------------- */
@@ -48,28 +61,14 @@ function hashToken(token: string): string {
   return createHash("sha256").update(token).digest("hex");
 }
 
-/** Verify credentials against the admins table. Returns null on failure. */
-export async function authenticate(
-  username: string,
-  password: string,
-): Promise<Admin | null> {
-  const sql = db();
-  const rows = (await sql`
-    SELECT id, username, password_hash FROM admins WHERE username = ${username}
-  `) as { id: number; username: string; password_hash: string }[];
-  const admin = rows[0];
-  if (!admin || !verifyPassword(password, admin.password_hash)) return null;
-  return { id: admin.id, username: admin.username };
-}
-
-/** Create a DB session and set the cookie. Call from a server action only. */
-export async function createSession(adminId: number): Promise<void> {
+/** Create a DB session and set the cookie. Server action / route handler only. */
+export async function createSession(userId: number): Promise<void> {
   const token = randomBytes(32).toString("hex");
   const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
   const sql = db();
   await sql`
-    INSERT INTO admin_sessions (token_hash, admin_id, expires_at)
-    VALUES (${hashToken(token)}, ${adminId}, ${expiresAt.toISOString()})
+    INSERT INTO admin_sessions (token_hash, user_id, expires_at)
+    VALUES (${hashToken(token)}, ${userId}, ${expiresAt.toISOString()})
   `;
   // Opportunistic cleanup of expired sessions.
   await sql`DELETE FROM admin_sessions WHERE expires_at < now()`;
@@ -94,25 +93,68 @@ export async function destroySession(): Promise<void> {
 }
 
 /**
- * Resolve the logged-in admin from the session cookie (null if none).
- * Wrapped in React cache() so one request does at most one lookup.
+ * Resolve the signed-in user from the session cookie (null if none, expired,
+ * or disabled). Wrapped in React cache() so one request does at most one lookup.
  */
-export const getAdmin = cache(async (): Promise<Admin | null> => {
+export const getUser = cache(async (): Promise<SessionUser | null> => {
   const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE)?.value;
   if (!token) return null;
   const rows = (await db()`
-    SELECT a.id, a.username
+    SELECT u.id, u.email, u.name, u.role
     FROM admin_sessions s
-    JOIN admins a ON a.id = s.admin_id
-    WHERE s.token_hash = ${hashToken(token)} AND s.expires_at > now()
-  `) as Admin[];
+    JOIN users u ON u.id = s.user_id
+    WHERE s.token_hash = ${hashToken(token)}
+      AND s.expires_at > now()
+      AND NOT u.disabled
+  `) as SessionUser[];
   return rows[0] ?? null;
 });
 
-/** Gate for admin pages and actions — redirects to the login page. */
-export async function requireAdmin(): Promise<Admin> {
-  const admin = await getAdmin();
-  if (!admin) redirect("/ap/login");
-  return admin;
+/* ---------- gates -------------------------------------------------------- */
+
+/** Any signed-in user (including members) — redirects to the login page. */
+export async function requireUser(): Promise<SessionUser> {
+  await assertAllowedIp();
+  const user = await getUser();
+  if (!user) redirect("/ap/login");
+  return user;
+}
+
+/** Admins and editors — members are sent to the awaiting-approval page. */
+export async function requireEditor(): Promise<SessionUser> {
+  const user = await requireUser();
+  if (!canTriage(user.role)) redirect("/ap");
+  return user;
+}
+
+/** Admins only. */
+export async function requireAdmin(): Promise<SessionUser> {
+  const user = await requireUser();
+  if (!canManageUsers(user.role)) redirect("/ap");
+  return user;
+}
+
+/* ---------- login resolution --------------------------------------------- */
+
+/**
+ * Map a verified OIDC identity to a user row. Known users get their login
+ * recorded; unknown users are created as members when JIT provisioning is on
+ * and rejected (null) otherwise. The caller must check `disabled`.
+ */
+export async function resolveUser(
+  identity: Identity,
+  jit: boolean,
+): Promise<UserRow | null> {
+  const existing = await findUserByIdentity(identity.issuer, identity.subject);
+  if (existing) {
+    await touchUserLogin(existing.id, identity);
+    return {
+      ...existing,
+      email: identity.email ?? existing.email,
+      name: identity.name ?? existing.name,
+    };
+  }
+  if (!jit) return null;
+  return insertUser(identity, DEFAULT_ROLE);
 }

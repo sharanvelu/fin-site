@@ -62,6 +62,17 @@ export default function TroubleshootingPage() {
         your plugs dir (<Code>~/.fin/plugs/&lt;name&gt;.py</Code>).
       </P>
 
+      <H2 id="image-pull">Image Pull Failed</H2>
+      <P>
+        <Code>fin up</Code> pulls every missing image concurrently before
+        starting any container. If some pulls fail, the others still run to
+        completion, and Fin then reports every failure at once in a single{" "}
+        <Code>Image Pull Failed</Code> error that lists each bad image with its
+        message. Check the image name and tag, and your network and registry
+        access, then run <Code>fin up</Code> again — images that already pulled
+        are not downloaded twice.
+      </P>
+
       <H2 id="port">Port already in use</H2>
       <P>
         <Code>&quot;Port In Use&quot;</Code> — another process (often another

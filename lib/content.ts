@@ -68,17 +68,17 @@ export const COMMAND_GROUPS: CommandGroup[] = [
     commands: [
       {
         name: "up",
-        desc: "Ensure the proxy, start enabled assets, start the primary app container, and auto-create the DB. Requires FIN_APP; offers to install any missing FIN_APP/FIN_PLUGS plugs before starting.",
+        desc: "Prefetch any missing images concurrently, ensure the proxy, start enabled assets, start the primary app container, and auto-create the DB. Requires FIN_APP; offers to install any missing FIN_APP/FIN_PLUGS plugs before starting.",
       },
       {
         name: "down",
         args: "[asset|all] [-f]",
-        desc: "Stop and remove containers. No scope = this project; asset = shared assets; all = everything Fin-managed. Running containers are removed without -f; -f force-removes stopped/created ones too.",
+        desc: "Stop and remove containers. Scopes: [asset|all]. No scope = this project; asset = shared assets; all = everything Fin-managed. Running containers shut down gracefully before removal; -f force-removes immediately.",
       },
       {
         name: "stop",
         args: "[asset|all]",
-        desc: "Stop containers without removing them. Same scopes as down.",
+        desc: "Gracefully stop running containers and leave them in place. Same scopes as down; -f is ignored.",
       },
       {
         name: "config",
@@ -88,7 +88,7 @@ export const COMMAND_GROUPS: CommandGroup[] = [
       {
         name: "asset",
         args: "up|stop|down [-f]",
-        desc: "Manage the shared asset containers independently of any project.",
+        desc: "Manage the shared asset containers independently of any project. asset down removes all asset containers (graceful stop first); -f force-removes immediately.",
       },
     ],
   },

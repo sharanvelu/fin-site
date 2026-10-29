@@ -1,8 +1,9 @@
 /**
- * OIDC configuration and login-flow helpers — pure and dependency-free so they
- * are unit-testable. Nothing here touches `process.env` or the network: callers
- * pass the env in, and lib/oidc.ts does the openid-client work.
+ * OIDC configuration and login-flow helpers — pure (Node built-ins only) so
+ * they are unit-testable. Nothing here touches `process.env` or the network:
+ * callers pass the env in, and lib/oidc.ts does the openid-client work.
  */
+import { createHmac, timingSafeEqual } from "node:crypto";
 
 export type OidcConfig = {
   issuer: string;
@@ -94,16 +95,41 @@ export const TX_COOKIE = "fin_oidc_tx";
 /** v = PKCE code verifier, s = state, n = nonce. */
 export type AuthTransaction = { v: string; s: string; n: string };
 
-export function encodeTransaction(tx: AuthTransaction): string {
-  return Buffer.from(JSON.stringify(tx), "utf8").toString("base64url");
+/** Domain-separated HMAC key derived from the OIDC client secret. */
+function signature(payload: string, secret: string): string {
+  return createHmac("sha256", `fin_oidc_tx:${secret}`)
+    .update(payload)
+    .digest("base64url");
 }
 
+/**
+ * Serialize and sign the transaction: `<base64url json>.<base64url hmac>`.
+ * Signing means the callback only trusts a cookie this server issued, so a
+ * forged cookie can't trigger a token-endpoint call to the IdP.
+ */
+export function encodeTransaction(tx: AuthTransaction, secret: string): string {
+  const payload = Buffer.from(JSON.stringify(tx), "utf8").toString("base64url");
+  return `${payload}.${signature(payload, secret)}`;
+}
+
+/** Verify the signature and parse; any failure yields null. */
 export function decodeTransaction(
   value: string | undefined,
+  secret: string,
 ): AuthTransaction | null {
   if (!value) return null;
+  const parts = value.split(".");
+  if (parts.length !== 2) return null;
+  const [payload, sig] = parts;
+  const expected = Buffer.from(signature(payload, secret));
+  const actual = Buffer.from(sig);
+  if (actual.length !== expected.length || !timingSafeEqual(actual, expected)) {
+    return null;
+  }
   try {
-    const parsed = JSON.parse(Buffer.from(value, "base64url").toString("utf8"));
+    const parsed = JSON.parse(
+      Buffer.from(payload, "base64url").toString("utf8"),
+    );
     if (
       parsed &&
       typeof parsed.v === "string" &&

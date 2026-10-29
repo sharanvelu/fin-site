@@ -6,6 +6,7 @@ import {
   STATUS_META,
   isRequestType,
   isStatus,
+  sanitizeEmail,
   validateSubmission,
 } from "@/lib/feedback";
 
@@ -94,18 +95,40 @@ describe("validateSubmission", () => {
     if (!result.ok) expect(result.errors.severity).toBeTruthy();
   });
 
-  it("rejects a bad email and an out-of-range rating", () => {
+  it("rejects an out-of-range rating", () => {
     const result = validateSubmission("feedback", {
       title: "Nice CLI",
-      email: "not-an-email",
       rating: "9",
       area: "CLI",
       message: "Love it",
     });
     expect(result.ok).toBe(false);
-    if (!result.ok) {
-      expect(result.errors.email).toBeTruthy();
-      expect(result.errors.rating).toBeTruthy();
+    if (!result.ok) expect(result.errors.rating).toBeTruthy();
+  });
+
+  it("drops an unsafe email instead of rejecting the submission", () => {
+    const result = validateSubmission("feedback", {
+      title: "Nice CLI",
+      email: "a@b.co?bcc=evil%40x.com&body=hi",
+      rating: "5",
+      area: "CLI",
+      message: "Love it",
+    });
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.submission.email).toBeNull();
+  });
+
+  it("keeps a plain email", () => {
+    const result = validateSubmission("feedback", {
+      title: "Nice CLI",
+      email: "  sam.o+fin@example.co.uk ",
+      rating: "5",
+      area: "CLI",
+      message: "Love it",
+    });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.submission.email).toBe("sam.o+fin@example.co.uk");
     }
   });
 
@@ -119,5 +142,35 @@ describe("validateSubmission", () => {
     });
     expect(result.ok).toBe(true);
     if (result.ok) expect(result.submission.details.injected).toBeUndefined();
+  });
+});
+
+describe("sanitizeEmail", () => {
+  it("accepts ordinary addresses", () => {
+    expect(sanitizeEmail("sam@example.com")).toBe("sam@example.com");
+    expect(sanitizeEmail("a.b+c_d@sub.example.io")).toBe(
+      "a.b+c_d@sub.example.io",
+    );
+  });
+
+  it("drops anything that could alter a mailto: link", () => {
+    for (const bad of [
+      "a@b.co?subject=x",
+      "a@b.co&body=x",
+      "a@b.co%0Abcc=x",
+      "a@b.co#frag",
+      'a@b.co"',
+      "a@b.co,c@d.co",
+      "a b@c.de",
+      "<a@b.co>",
+      "not-an-email",
+      "a@b",
+      "a@@b.co",
+      `${"a".repeat(250)}@b.co`,
+      "",
+      undefined,
+    ]) {
+      expect(sanitizeEmail(bad), String(bad)).toBeNull();
+    }
   });
 });

@@ -17,15 +17,16 @@ import {
 /** Finishes the OIDC flow and signs the user in (or sends them back with an error). */
 export async function GET(request: NextRequest) {
   const cookieStore = await cookies();
-  const tx = decodeTransaction(cookieStore.get(TX_COOKIE)?.value);
+  const rawTx = cookieStore.get(TX_COOKIE)?.value;
   cookieStore.delete(TX_COOKIE);
 
   let target = "/ap";
-  if (!tx) {
-    target = loginErrorRedirect("state");
-  } else {
-    try {
-      const cfg = getOidcConfig();
+  try {
+    const cfg = getOidcConfig();
+    const tx = decodeTransaction(rawTx, cfg.clientSecret);
+    if (!tx) {
+      target = loginErrorRedirect("state");
+    } else {
       const config = await getConfiguration(cfg);
       const identity = await finishAuthorization(
         cfg,
@@ -41,10 +42,10 @@ export async function GET(request: NextRequest) {
       } else {
         await createSession(user.id);
       }
-    } catch (error) {
-      console.error("OIDC callback failed:", error);
-      target = loginErrorRedirect(classifyOidcError(error));
     }
+  } catch (error) {
+    console.error("OIDC callback failed:", error);
+    target = loginErrorRedirect(classifyOidcError(error));
   }
   redirect(target);
 }

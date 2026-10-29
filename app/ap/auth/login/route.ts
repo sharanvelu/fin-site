@@ -19,7 +19,7 @@ export async function GET() {
     const config = await getConfiguration(cfg);
     const { url, tx } = await startAuthorization(cfg, config);
     const cookieStore = await cookies();
-    cookieStore.set(TX_COOKIE, encodeTransaction(tx), {
+    cookieStore.set(TX_COOKIE, encodeTransaction(tx, cfg.clientSecret), {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       // lax is required: the IdP -> callback hop is a cross-site top-level GET.

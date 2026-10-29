@@ -1,3 +1,4 @@
+import { createHmac } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import {
   LOGIN_ERROR_CODES,
@@ -97,23 +98,48 @@ describe("helpers", () => {
 });
 
 describe("auth transaction cookie", () => {
-  it("round-trips", () => {
-    const tx = { v: "verifier", s: "state", n: "nonce" };
-    expect(decodeTransaction(encodeTransaction(tx))).toEqual(tx);
+  const tx = { v: "verifier", s: "state", n: "nonce" };
+  const secret = "client-secret";
+
+  it("round-trips with the same secret", () => {
+    expect(decodeTransaction(encodeTransaction(tx, secret), secret)).toEqual(
+      tx,
+    );
   });
 
-  it("rejects garbage", () => {
-    expect(decodeTransaction(undefined)).toBeNull();
-    expect(decodeTransaction("")).toBeNull();
-    expect(decodeTransaction("%%%")).toBeNull();
+  it("rejects a different secret", () => {
     expect(
-      decodeTransaction(Buffer.from("not json").toString("base64url")),
+      decodeTransaction(encodeTransaction(tx, secret), "other"),
     ).toBeNull();
-    expect(
-      decodeTransaction(
-        Buffer.from(JSON.stringify({ v: "a", s: "b" })).toString("base64url"),
-      ),
-    ).toBeNull();
+  });
+
+  it("rejects a tampered payload or signature", () => {
+    const [payload, sig] = encodeTransaction(tx, secret).split(".");
+    const forged = Buffer.from(
+      JSON.stringify({ v: "attacker", s: "state", n: "nonce" }),
+    ).toString("base64url");
+    expect(decodeTransaction(`${forged}.${sig}`, secret)).toBeNull();
+    expect(decodeTransaction(`${payload}.${sig}x`, secret)).toBeNull();
+    expect(decodeTransaction(`${payload}.`, secret)).toBeNull();
+  });
+
+  it("rejects unsigned and garbage values", () => {
+    const unsigned = Buffer.from(JSON.stringify(tx)).toString("base64url");
+    expect(decodeTransaction(unsigned, secret)).toBeNull();
+    expect(decodeTransaction(undefined, secret)).toBeNull();
+    expect(decodeTransaction("", secret)).toBeNull();
+    expect(decodeTransaction("%%%.%%%", secret)).toBeNull();
+    expect(decodeTransaction("a.b.c", secret)).toBeNull();
+  });
+
+  it("rejects a correctly signed payload with missing fields", () => {
+    const payload = Buffer.from(JSON.stringify({ v: "a", s: "b" })).toString(
+      "base64url",
+    );
+    const sig = createHmac("sha256", `fin_oidc_tx:${secret}`)
+      .update(payload)
+      .digest("base64url");
+    expect(decodeTransaction(`${payload}.${sig}`, secret)).toBeNull();
   });
 });
 
